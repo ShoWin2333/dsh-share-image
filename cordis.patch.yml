@@ -1,0 +1,6 @@
+# Mounts the Share-as-image bundle. The browser half is discovered from the
+# `dsh.client` declaration in package.json; this row only anchors the bundle
+# in the profile's plugin inventory.
+- insert:
+    - id: conversation-share-image
+      name: '@local/conversation-share-image'

@@ -1,0 +1,48 @@
+{
+  "name": "@local/conversation-share-image",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness plugin that shares selected conversation messages as a PNG card.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "share",
+    "screenshot",
+    "canvas"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShoWin2333/dsh-share-image.git"
+  },
+  "homepage": "https://github.com/ShoWin2333/dsh-share-image#readme",
+  "bugs": {
+    "url": "https://github.com/ShoWin2333/dsh-share-image/issues"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-chat"
+      ]
+    }
+  }
+}

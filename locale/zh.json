@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "title": "对话分享为图片",
+    "description": "把当前对话渲染成 PNG 图片，可下载或复制分享。"
+  },
+  "dialog.title": "分享为图片",
+  "dialog.download": "下载 PNG",
+  "dialog.copy": "复制图片",
+  "dialog.close": "关闭",
+  "dialog.copied": "图片已复制",
+  "dialog.copyFailed": "复制图片失败，请改为下载。",
+  "dialog.preview": "对话图片预览",
+  "dialog.partial": "当前视图尚未加载更早的消息，因此图片从对话中段开始。",
+  "card.defaultTitle": "对话",
+  "card.messages": "{count} 条消息",
+  "card.you": "你",
+  "card.assistant": "助手",
+  "card.footer": "来自 DeepSeek Harness 的对话分享",
+  "card.truncated": "对话过长，一张图片只容纳了最近的消息。",
+  "card.image": "图片",
+  "card.file": "文件",
+  "action.shareMessage": "把这条回复分享为图片",
+  "select.title": "选择要分享的消息",
+  "select.all": "全选",
+  "select.none": "全不选",
+  "select.count": "已选 {selected} / {total}",
+  "select.generate": "生成图片",
+  "select.cancel": "取消",
+  "select.empty": "请至少选择一条消息。",
+  "preview.back": "返回选择"
+}

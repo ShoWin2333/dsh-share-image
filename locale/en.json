@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "title": "Share Conversation as Image",
+    "description": "Renders the current conversation as a PNG card that you can download or copy."
+  },
+  "dialog.title": "Share as image",
+  "dialog.download": "Download PNG",
+  "dialog.copy": "Copy image",
+  "dialog.close": "Close",
+  "dialog.copied": "Image copied",
+  "dialog.copyFailed": "Couldn't copy the image. Download it instead.",
+  "dialog.preview": "Conversation image preview",
+  "dialog.partial": "Older messages aren't loaded in this view yet, so the image starts partway through the conversation.",
+  "card.defaultTitle": "Conversation",
+  "card.messages": "{count} messages",
+  "card.you": "You",
+  "card.assistant": "Assistant",
+  "card.footer": "Shared from DeepSeek Harness",
+  "card.truncated": "Long conversation: only the most recent messages fit in one image.",
+  "card.image": "Image",
+  "card.file": "File",
+  "action.shareMessage": "Share this reply as image",
+  "select.title": "Choose messages to share",
+  "select.all": "Select all",
+  "select.none": "Clear",
+  "select.count": "{selected} of {total} selected",
+  "select.generate": "Create image",
+  "select.cancel": "Cancel",
+  "select.empty": "Choose at least one message.",
+  "preview.back": "Back to selection"
+}
