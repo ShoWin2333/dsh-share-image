@@ -6,7 +6,7 @@
  * overlay with Download and Copy actions.
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-plugin-share-image',
+  id: '@showin2333/dsh-plugin-share-image',
   factory(require) {
     const React = require('react');
     const h = React.createElement;

@@ -13,17 +13,22 @@ card you can download or copy.
 
 ## Install
 
-Package name: `dsh-plugin-share-image`. There is no build step; the package
+This package replaces `dsh-plugin-share-image`. The existing
+`conversation-share-image` bundle row and action/overlay IDs stay unchanged.
+Unload the former bundle before replacing dependency/module references; do not
+load both names together. The former npm package is retained for migration.
+
+Package name: `@showin2333/dsh-plugin-share-image`. There is no build step; the package
 ships `client.js` as-is.
 
-**Ask your DSH agent** to install the bundle from `dsh-plugin-share-image`
+**Ask your DSH agent** to install the bundle from `@showin2333/dsh-plugin-share-image`
 (npm) or `github:ShoWin2333/dsh-share-image`; the plugin manager adds the
 dependency and the profile's bundle list for you.
 
 **Or install it manually** into a profile (profile name substituted):
 
 ```bash
-dsh plugin --profile <profile> add dsh-plugin-share-image          # npm
+dsh plugin --profile <profile> add @showin2333/dsh-plugin-share-image          # npm
 dsh plugin --profile <profile> add github:ShoWin2333/dsh-share-image  # from source
 ```
 
@@ -34,7 +39,7 @@ Then add the package to `dsh.profile.bundles` in that profile's `package.json`:
   "dsh": {
     "profile": {
       "bundles": [
-        "dsh-plugin-share-image"
+        "@showin2333/dsh-plugin-share-image"
       ]
     }
   }
