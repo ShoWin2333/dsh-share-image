@@ -3,4 +3,4 @@
 # in the profile's plugin inventory.
 - insert:
     - id: conversation-share-image
-      name: '@local/conversation-share-image'
+      name: 'dsh-plugin-share-image'

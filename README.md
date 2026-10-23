@@ -13,8 +13,8 @@ card you can download or copy.
 
 ## Install
 
-Installed name: `@local/conversation-share-image`. There is no build step; the
-package ships `client.js` as-is.
+Package name: `dsh-plugin-share-image`. There is no build step; the package
+ships `client.js` as-is.
 
 **Ask your DSH agent** to install the bundle from
 `github:ShoWin2333/dsh-share-image`; the plugin manager adds the dependency and
@@ -23,7 +23,8 @@ the profile's bundle list for you.
 **Or install it manually** into a profile (profile name substituted):
 
 ```bash
-dsh plugin --profile <profile> add github:ShoWin2333/dsh-share-image
+dsh plugin --profile <profile> add dsh-plugin-share-image          # npm
+dsh plugin --profile <profile> add github:ShoWin2333/dsh-share-image  # from source
 ```
 
 Then add the package to `dsh.profile.bundles` in that profile's `package.json`:
@@ -33,7 +34,7 @@ Then add the package to `dsh.profile.bundles` in that profile's `package.json`:
   "dsh": {
     "profile": {
       "bundles": [
-        "@local/conversation-share-image"
+        "dsh-plugin-share-image"
       ]
     }
   }

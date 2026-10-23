@@ -1,5 +1,5 @@
 {
-  "name": "@local/conversation-share-image",
+  "name": "dsh-plugin-share-image",
   "version": "1.0.0",
   "description": "DeepSeek Harness plugin that shares selected conversation messages as a PNG card.",
   "type": "module",
