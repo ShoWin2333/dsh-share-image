@@ -16,9 +16,9 @@ card you can download or copy.
 Package name: `dsh-plugin-share-image`. There is no build step; the package
 ships `client.js` as-is.
 
-**Ask your DSH agent** to install the bundle from
-`github:ShoWin2333/dsh-share-image`; the plugin manager adds the dependency and
-the profile's bundle list for you.
+**Ask your DSH agent** to install the bundle from `dsh-plugin-share-image`
+(npm) or `github:ShoWin2333/dsh-share-image`; the plugin manager adds the
+dependency and the profile's bundle list for you.
 
 **Or install it manually** into a profile (profile name substituted):
 
