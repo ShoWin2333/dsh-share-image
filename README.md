@@ -75,8 +75,9 @@ transcript rather than a log.
   into one answer in the image; unselected messages in between are skipped.
 - A very long conversation is truncated to fit one image; the card then ends
   with a note saying the most recent messages were kept.
-- The image is drawn at 2x resolution on a fixed light card, independent of the
-  active UI theme, so it looks the same wherever it is shared.
+- The card is laid out at phone width (390 logical px) and exported at up to
+  3x, so it fills a phone screen with readable text wherever it is shared.
+- The card keeps a fixed light palette, independent of the active UI theme.
 - The PNG is generated locally in the browser. Nothing is uploaded.
 
 ## How it is put together
