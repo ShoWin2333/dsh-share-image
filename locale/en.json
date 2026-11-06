@@ -15,7 +15,6 @@
   "card.messages": "{count} messages",
   "card.you": "You",
   "card.assistant": "Assistant",
-  "card.footer": "Shared from DeepSeek Harness",
   "card.truncated": "Long conversation: only the most recent messages fit in one image.",
   "card.image": "Image",
   "card.file": "File",
@@ -27,5 +26,6 @@
   "select.generate": "Create image",
   "select.cancel": "Cancel",
   "select.empty": "Choose at least one message.",
-  "preview.back": "Back to selection"
+  "preview.back": "Back to selection",
+  "card.disclaimer": "AI-generated content may contain mistakes."
 }

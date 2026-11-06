@@ -28,38 +28,54 @@ window.__ModuleLoader__.load({
 
     const CARD = {
       width: 760,
-      margin: 16,
-      pad: 40,
-      radius: 20,
+      pad: 88,
       maxHeight: 6200,
       brand: '#4d6bfe',
     };
 
     const COLORS = {
-      backgroundTop: '#f7f9fd',
-      backgroundBottom: '#e8edf7',
-      card: '#ffffff',
-      cardEdge: 'rgba(20, 29, 54, 0.05)',
-      ink: '#12141a',
-      body: '#22262e',
-      meta: '#6b7482',
-      divider: '#eceff5',
-      marker: '#7c8695',
-      codeBg: '#f7f8fb',
-      codeBorder: '#e9ecf2',
+      ink: '#14171c',
+      body: '#1f2328',
+      meta: '#8a919c',
+      divider: '#eef0f4',
+      marker: '#6b7280',
+      codeBg: '#f6f7f9',
+      codeBorder: '#e8eaef',
       codeText: '#374151',
-      quoteBar: '#c7d2fe',
-      quoteText: '#4b5563',
+      quoteBar: '#d8dee9',
+      quoteText: '#5b6472',
       warnBg: '#fff8ed',
       warnBorder: '#fbe2c0',
       warnText: '#b45309',
-      userBg: '#f4f8ff',
-      userBorder: '#e3ebfd',
-      userChipBg: '#e8efff',
-      userChipText: '#3b5bdb',
-      assistantChipBg: '#f2f3f6',
-      assistantChipText: '#5b6472',
+      markTile: '#4d6bfe',
+      markWhale: '#ffffff',
     };
+
+    /** Assistant text palette (default) and the inverted palette for the bubble. */
+    const ASSISTANT_THEME = {
+      heading: COLORS.ink,
+      body: COLORS.body,
+      marker: COLORS.marker,
+      quoteBar: COLORS.quoteBar,
+      quoteText: COLORS.quoteText,
+      codeBg: COLORS.codeBg,
+      codeBorder: COLORS.codeBorder,
+      codeText: COLORS.codeText,
+    };
+
+    const BUBBLE_THEME = {
+      heading: '#ffffff',
+      body: '#ffffff',
+      marker: 'rgba(255, 255, 255, 0.72)',
+      quoteBar: 'rgba(255, 255, 255, 0.55)',
+      quoteText: 'rgba(255, 255, 255, 0.9)',
+      codeBg: 'rgba(255, 255, 255, 0.16)',
+      codeBorder: 'rgba(255, 255, 255, 0.26)',
+      codeText: '#f4f7ff',
+    };
+
+    /** Official DSH whale mark: single path from the bundled 50×50 favicon. */
+    const WHALE_PATH = 'M48.8354 10.0479C48.3232 9.79199 48.1025 10.2798 47.8032 10.5278C47.7007 10.6079 47.6143 10.7119 47.5273 10.8076C46.7793 11.624 45.9048 12.1597 44.7622 12.0957C43.0923 12 41.666 12.5356 40.4058 13.8398C40.1377 12.2319 39.2476 11.272 37.8926 10.6558C37.1836 10.3359 36.4668 10.0156 35.9702 9.31982C35.6235 8.82373 35.5293 8.27197 35.356 7.72754C35.2456 7.3999 35.1353 7.06396 34.7651 7.00781C34.3633 6.94385 34.2056 7.2876 34.0479 7.57568C33.418 8.75195 33.1733 10.0479 33.1973 11.3599C33.2524 14.312 34.4736 16.6641 36.8999 18.3359C37.1758 18.5278 37.2466 18.7197 37.1597 19C36.9946 19.5757 36.7974 20.1357 36.624 20.7119C36.5137 21.0801 36.3486 21.1597 35.9624 21C34.6309 20.4321 33.481 19.5918 32.4644 18.5757C30.7393 16.8721 29.1792 14.9917 27.2334 13.52C26.7764 13.1758 26.3193 12.856 25.8467 12.5518C23.8618 10.584 26.1069 8.96777 26.627 8.77588C27.1704 8.57568 26.8159 7.8877 25.0591 7.896C23.3022 7.90381 21.6953 8.50391 19.647 9.30371C19.3477 9.42383 19.0322 9.51172 18.7095 9.58398C16.8501 9.22363 14.9199 9.14355 12.9033 9.37598C9.10596 9.80762 6.07275 11.6396 3.84326 14.7681C1.16455 18.5278 0.53418 22.7998 1.30664 27.2559C2.11768 31.9521 4.46582 35.8398 8.07373 38.8799C11.8159 42.0322 16.1255 43.5762 21.041 43.2803C24.0269 43.104 27.3516 42.6963 31.1016 39.4561C32.0469 39.936 33.0396 40.1279 34.686 40.272C35.9546 40.3921 37.1758 40.208 38.1211 40.0078C39.6021 39.688 39.4995 38.2881 38.9639 38.0322C34.623 35.9678 35.5762 36.8081 34.71 36.1279C36.9155 33.4639 40.2402 30.6958 41.54 21.728C41.6426 21.0161 41.5557 20.5679 41.54 19.9917C41.5322 19.6396 41.6108 19.5039 42.0049 19.4639C43.0923 19.3359 44.1479 19.0317 45.1167 18.4878C47.9292 16.9199 49.064 14.3438 49.3315 11.2559C49.3711 10.7837 49.3237 10.2959 48.8354 10.0479ZM24.3262 37.8398C20.1196 34.4639 18.0791 33.3521 17.2358 33.3999C16.4482 33.4482 16.5898 34.3682 16.7632 34.9678C16.9443 35.5601 17.1812 35.9683 17.5117 36.4878C17.7402 36.832 17.8979 37.3442 17.2832 37.728C15.9282 38.584 13.5728 37.4399 13.4624 37.3838C10.7207 35.7358 8.42822 33.5601 6.81348 30.584C5.25342 27.7197 4.34766 24.6479 4.19775 21.3677C4.1582 20.5757 4.38672 20.2959 5.15869 20.1519C6.17529 19.96 7.22314 19.9199 8.23926 20.0718C12.5327 20.7119 16.1885 22.6719 19.2529 25.7759C21.002 27.5439 22.3252 29.6558 23.6885 31.7202C25.1377 33.9121 26.6978 36 28.6831 37.7119C29.3843 38.312 29.9434 38.7681 30.479 39.104C28.8643 39.2881 26.1699 39.3281 24.3262 37.8398ZM26.3433 24.6001C26.3433 24.248 26.6191 23.9678 26.9658 23.9678C27.0444 23.9678 27.1152 23.9839 27.1782 24.0078C27.2651 24.04 27.3438 24.0879 27.4067 24.1602C27.5171 24.272 27.5801 24.4321 27.5801 24.6001C27.5801 24.9521 27.3042 25.2319 26.9575 25.2319C26.6108 25.2319 26.3433 24.9521 26.3433 24.6001ZM32.6064 27.8799C32.2046 28.0479 31.8027 28.1919 31.4165 28.208C30.8179 28.2397 30.1641 27.9922 29.8096 27.688C29.2583 27.2158 28.8643 26.9521 28.6987 26.1279C28.6279 25.7759 28.6675 25.2319 28.7305 24.9199C28.8721 24.248 28.7144 23.8159 28.2495 23.4238C27.8716 23.104 27.3911 23.0161 26.8633 23.0161C26.666 23.0161 26.4849 22.9277 26.3511 22.856C26.1304 22.7441 25.9492 22.4639 26.1226 22.1201C26.1777 22.0078 26.4458 21.7358 26.5088 21.688C27.2256 21.272 28.0527 21.4077 28.8169 21.7197C29.5259 22.0161 30.0615 22.5601 30.834 23.3281C31.6216 24.2559 31.7632 24.5117 32.2124 25.208C32.5669 25.752 32.8901 26.312 33.1104 26.9521C33.2446 27.3521 33.0713 27.6802 32.6064 27.8799Z';
 
     let measureCanvas = null;
     function measureContext() {
@@ -311,22 +327,23 @@ window.__ModuleLoader__.load({
     }
 
     function blockGap(block) {
-      if (block.kind === 'item') return 6;
-      if (block.kind === 'heading') return 10;
-      return 12;
+      if (block.kind === 'item') return 8;
+      if (block.kind === 'heading') return 14;
+      return 15;
     }
 
-    function layoutMessageBlocks(ops, blocks, startY, x, width, measure) {
+    function layoutMessageBlocks(ops, blocks, startY, x, width, measure, theme) {
+      const palette = theme === undefined ? ASSISTANT_THEME : theme;
       let y = startY;
       const lastIndex = blocks.length - 1;
       blocks.forEach((block, index) => {
         const trailing = index === lastIndex ? 0 : blockGap(block);
         if (block.kind === 'heading') {
-          const size = block.level <= 1 ? 21 : block.level === 2 ? 18.5 : 16.5;
+          const size = block.level <= 1 ? 19 : block.level === 2 ? 17.5 : 16;
           const font = '700 ' + size + 'px ' + SANS;
           if (index > 0) y += 8;
           const lines = wrapText(measure, block.text, width, font);
-          y = emitLines(ops, lines, x, y, font, COLORS.ink, size + 11, size * 0.8 + 3);
+          y = emitLines(ops, lines, x, y, font, palette.heading, size + 11, size * 0.8 + 3);
           y += index === lastIndex ? 0 : 6;
           return;
         }
@@ -340,8 +357,8 @@ window.__ModuleLoader__.load({
           }
           if (lines.length === 0) lines.push(' ');
           const height = pad * 2 + lines.length * lineHeight;
-          ops.push({ t: 'rect', x, y, w: width, h: height, r: 10, c: COLORS.codeBg });
-          ops.push({ t: 'stroke', x, y, w: width, h: height, r: 10, c: COLORS.codeBorder });
+          ops.push({ t: 'rect', x, y, w: width, h: height, r: 10, c: palette.codeBg });
+          ops.push({ t: 'stroke', x, y, w: width, h: height, r: 10, c: palette.codeBorder });
           let cursor = y + pad;
           for (const line of lines) {
             ops.push({
@@ -350,7 +367,7 @@ window.__ModuleLoader__.load({
               x: x + pad,
               y: cursor + 13.5,
               f: font,
-              c: COLORS.codeText,
+              c: palette.codeText,
             });
             cursor += lineHeight;
           }
@@ -359,34 +376,34 @@ window.__ModuleLoader__.load({
         }
         if (block.kind === 'quote') {
           const font = '15px ' + SANS;
-          const lineHeight = 24;
+          const lineHeight = 25;
           const lines = wrapText(measure, block.text, width - 20, font);
           ops.push({
             t: 'rect',
             x,
             y: y + 3,
-            w: 4,
+            w: 3,
             h: Math.max(lines.length * lineHeight - 8, 8),
-            r: 2,
-            c: COLORS.quoteBar,
+            r: 1.5,
+            c: palette.quoteBar,
           });
-          y = emitLines(ops, lines, x + 20, y, font, COLORS.quoteText, lineHeight, 17.5);
+          y = emitLines(ops, lines, x + 20, y, font, palette.quoteText, lineHeight, 18);
           y += trailing;
           return;
         }
         if (block.kind === 'item') {
           const font = '15px ' + SANS;
-          const lineHeight = 25;
+          const lineHeight = 26;
           const lines = wrapText(measure, block.text, width - 26, font);
-          ops.push({ t: 'text', s: block.marker, x, y: y + 18, f: font, c: COLORS.marker });
-          y = emitLines(ops, lines, x + 26, y, font, COLORS.body, lineHeight, 18);
+          ops.push({ t: 'text', s: block.marker, x, y: y + 18, f: font, c: palette.marker });
+          y = emitLines(ops, lines, x + 26, y, font, palette.body, lineHeight, 18);
           y += trailing;
           return;
         }
         const font = '15px ' + SANS;
-        const lineHeight = 25;
+        const lineHeight = 26;
         const lines = wrapText(measure, block.text, width, font);
-        y = emitLines(ops, lines, x, y, font, COLORS.body, lineHeight, 18);
+        y = emitLines(ops, lines, x, y, font, palette.body, lineHeight, 18);
         y += trailing;
       });
       return y;
@@ -407,39 +424,36 @@ window.__ModuleLoader__.load({
       ctx.closePath();
     }
 
-    /** Gradient rounded square with a white photo glyph, used as the card mark. */
+    let whaleShape = null;
+
+    function whalePath() {
+      if (whaleShape === null && typeof Path2D !== 'undefined') {
+        whaleShape = new Path2D(WHALE_PATH);
+      }
+      return whaleShape;
+    }
+
+    /** Official DSH whale, filled at the requested size. */
+    function paintWhale(ctx, x, y, size, color) {
+      const shape = whalePath();
+      if (shape === null) return;
+      const inset = size * 0.14;
+      const unit = (size - inset * 2) / 50;
+      ctx.save();
+      ctx.translate(x + inset, y + inset);
+      ctx.scale(unit, unit);
+      ctx.fillStyle = color;
+      ctx.fill(shape);
+      ctx.restore();
+    }
+
+    /** Blue tile holding the official whale in white. */
     function paintMark(ctx, op) {
       const { x, y, s } = op;
-      ctx.save();
-      const gradient = ctx.createLinearGradient(x, y, x + s, y + s);
-      gradient.addColorStop(0, '#5b78ff');
-      gradient.addColorStop(1, '#7a5cff');
-      roundRectPath(ctx, x, y, s, s, s * 0.3);
-      ctx.fillStyle = gradient;
+      roundRectPath(ctx, x, y, s, s, s * 0.28);
+      ctx.fillStyle = COLORS.markTile;
       ctx.fill();
-
-      const frameW = s * 0.52;
-      const frameH = s * 0.4;
-      const frameX = x + (s - frameW) / 2;
-      const frameY = y + (s - frameH) / 2;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = Math.max(1.2, s * 0.045);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      roundRectPath(ctx, frameX, frameY, frameW, frameH, frameH * 0.2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(frameX + frameW * 0.28, frameY + frameH * 0.34, Math.max(1, s * 0.045), 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(frameX + frameW * 0.12, frameY + frameH * 0.82);
-      ctx.lineTo(frameX + frameW * 0.42, frameY + frameH * 0.5);
-      ctx.lineTo(frameX + frameW * 0.62, frameY + frameH * 0.72);
-      ctx.lineTo(frameX + frameW * 0.78, frameY + frameH * 0.58);
-      ctx.lineTo(frameX + frameW * 0.9, frameY + frameH * 0.82);
-      ctx.stroke();
-      ctx.restore();
+      paintWhale(ctx, x, y, s, COLORS.markWhale);
     }
 
     function drawOps(ctx, ops) {
@@ -475,24 +489,15 @@ window.__ModuleLoader__.load({
       }
     }
 
-    function fitEllipsis(measure, text, maxWidth, font) {
-      measure.font = font;
-      let candidate = text;
-      while (candidate.length > 0 && measure.measureText(candidate + '\u2026').width > maxWidth) {
-        candidate = candidate.slice(0, -1);
-      }
-      return candidate + '\u2026';
-    }
-
     function measureTextWidth(measure, text, font) {
       measure.font = font;
       return measure.measureText(text).width;
     }
 
     /** Lay out parsed markdown at the origin so callers can place or box it. */
-    function renderBlocks(text, width, measure) {
+    function renderBlocks(text, width, measure, theme) {
       const ops = [];
-      const height = layoutMessageBlocks(ops, parseBlocks(text), 0, 0, width, measure);
+      const height = layoutMessageBlocks(ops, parseBlocks(text), 0, 0, width, measure, theme);
       return { ops, height };
     }
 
@@ -528,62 +533,37 @@ window.__ModuleLoader__.load({
       const measure = measureContext();
       const ops = [];
       const width = CARD.width;
-      const margin = CARD.margin;
       const pad = CARD.pad;
-      const cardWidth = width - margin * 2;
-      const contentWidth = cardWidth - pad * 2;
+      const contentWidth = width - pad * 2;
       const left = pad;
-      const right = cardWidth - pad;
-      let y = pad;
+      const right = width - pad;
+      let y = 36;
 
-      // Brand row: gradient mark, wordmark, and date.
-      ops.push({ t: 'mark', x: left, y, s: 36 });
+      // Compact left-aligned brand header; the date sits on the right.
+      const markSize = 30;
+      ops.push({ t: 'mark', x: left, y, s: markSize });
       ops.push({
         t: 'text',
         s: 'DeepSeek Harness',
-        x: left + 50,
-        y: y + 24,
-        f: '600 16px ' + SANS,
+        x: left + markSize + 10,
+        y: y + 20,
+        f: '600 13.5px ' + SANS,
         c: COLORS.ink,
       });
-      const dateFont = '12.5px ' + SANS;
+      const dateFont = '12px ' + SANS;
       const dateWidth = measureTextWidth(measure, options.dateText, dateFont);
       ops.push({
         t: 'text',
         s: options.dateText,
         x: right - dateWidth,
-        y: y + 23,
+        y: y + 19,
         f: dateFont,
         c: COLORS.meta,
       });
 
-      y += 36 + 28;
-
-      // Title.
-      const titleFont = '700 27px ' + SANS;
-      const allTitleLines = wrapText(measure, options.title, contentWidth, titleFont);
-      const titleLines = allTitleLines.slice(0, 3);
-      if (allTitleLines.length > 3) {
-        titleLines[2] = fitEllipsis(measure, titleLines[2], contentWidth, titleFont);
-      }
-      for (const line of titleLines) {
-        ops.push({ t: 'text', s: line, x: left, y: y + 23, f: titleFont, c: COLORS.ink });
-        y += 37;
-      }
-
-      // Meta line.
-      y += 2;
-      ops.push({
-        t: 'text',
-        s: options.metaText,
-        x: left,
-        y: y + 16,
-        f: '13px ' + SANS,
-        c: COLORS.meta,
-      });
-      y += 16 + 24;
+      y += markSize + 18;
       ops.push({ t: 'line', x1: left, y1: y, x2: right, y2: y, c: COLORS.divider });
-      y += 28;
+      y += 26;
 
       let truncated = false;
       for (const message of options.messages) {
@@ -591,70 +571,39 @@ window.__ModuleLoader__.load({
           truncated = true;
           break;
         }
-        const isUser = message.role === 'user';
-        const roleLabel = isUser ? options.labels.user : options.labels.assistant;
-        const pillFont = '600 11px ' + SANS;
-        const pillWidth = measureTextWidth(measure, roleLabel, pillFont) + 27;
-        ops.push({
-          t: 'rect',
-          x: left,
-          y,
-          w: pillWidth,
-          h: 22,
-          r: 11,
-          c: isUser ? COLORS.userChipBg : COLORS.assistantChipBg,
-        });
-        ops.push({
-          t: 'dot',
-          x: left + 11,
-          y: y + 11,
-          r: 3,
-          c: isUser ? COLORS.userChipText : COLORS.assistantChipText,
-        });
-        ops.push({
-          t: 'text',
-          s: roleLabel,
-          x: left + 20,
-          y: y + 15,
-          f: pillFont,
-          c: isUser ? COLORS.userChipText : COLORS.assistantChipText,
-        });
-        y += 22 + 12;
-
-        if (isUser) {
-          const innerWidth = contentWidth - 36;
-          const content = renderBlocks(message.text, innerWidth, measure);
-          const bubbleHeight = Math.ceil(content.height + 28);
-          const bubbleWidth = Math.min(
-            contentWidth,
-            Math.max(200, Math.ceil(naturalContentWidth(content, measure) + 36)),
+        if (message.role === 'user') {
+          const maxBubble = Math.round(contentWidth * 0.8);
+          const bubblePadX = 16;
+          const bubblePadY = 12;
+          const content = renderBlocks(
+            message.text,
+            maxBubble - bubblePadX * 2,
+            measure,
+            BUBBLE_THEME,
           );
+          const natural = naturalContentWidth(content, measure);
+          const bubbleWidth = Math.min(
+            maxBubble,
+            Math.max(120, Math.ceil(natural + bubblePadX * 2)),
+          );
+          const bubbleHeight = Math.ceil(content.height + bubblePadY * 2);
+          const bubbleX = right - bubbleWidth;
           ops.push({
             t: 'rect',
-            x: left,
+            x: bubbleX,
             y,
             w: bubbleWidth,
             h: bubbleHeight,
             r: 14,
-            c: COLORS.userBg,
+            c: CARD.brand,
           });
-          ops.push({
-            t: 'stroke',
-            x: left,
-            y,
-            w: bubbleWidth,
-            h: bubbleHeight,
-            r: 14,
-            c: COLORS.userBorder,
-          });
-          shiftOps(ops, content.ops, left + 18, y + 14);
-          y += bubbleHeight;
+          shiftOps(ops, content.ops, bubbleX + bubblePadX, y + bubblePadY);
+          y += bubbleHeight + 24;
         } else {
           const content = renderBlocks(message.text, contentWidth, measure);
           shiftOps(ops, content.ops, left, y);
-          y += content.height;
+          y += content.height + 26;
         }
-        y += 26;
       }
 
       if (truncated) {
@@ -672,24 +621,44 @@ window.__ModuleLoader__.load({
           c: COLORS.warnBorder,
         });
         emitLines(ops, lines, left + 16, y + 11, font, COLORS.warnText, 19, 13.5);
-        y += height + 14;
+        y += height + 16;
       }
 
-      // Footer.
-      y += 2;
+      // Footer: the same brand rule at a smaller size.
+      y += 12;
       ops.push({ t: 'line', x1: left, y1: y, x2: right, y2: y, c: COLORS.divider });
-      y += 22;
-      ops.push({ t: 'dot', x: left + 3, y: y + 5, r: 3, c: CARD.brand });
+      y += 18;
+      const smallMark = 20;
+      ops.push({ t: 'mark', x: left, y, s: smallMark });
       ops.push({
         t: 'text',
-        s: options.footerText,
-        x: left + 14,
+        s: 'DeepSeek Harness',
+        x: left + smallMark + 8,
         y: y + 10,
-        f: '11.5px ' + SANS,
+        f: '600 11.5px ' + SANS,
+        c: COLORS.ink,
+      });
+      ops.push({
+        t: 'text',
+        s: options.disclaimer,
+        x: left + smallMark + 8,
+        y: y + 23,
+        f: '10.5px ' + SANS,
         c: COLORS.meta,
       });
+      const countFont = '11px ' + SANS;
+      const countWidth = measureTextWidth(measure, options.metaText, countFont);
+      ops.push({
+        t: 'text',
+        s: options.metaText,
+        x: right - countWidth,
+        y: y + 14,
+        f: countFont,
+        c: COLORS.meta,
+      });
+      y += 30;
 
-      return { ops, height: Math.ceil(y + pad), width, truncated };
+      return { ops, height: Math.ceil(y + 48), width, truncated };
     }
 
     function dataUrlToBlob(dataUrl) {
@@ -719,52 +688,24 @@ window.__ModuleLoader__.load({
 
     function renderShareImage(options) {
       const layout = buildLayout(options);
-      const canvasWidth = CARD.width;
-      const canvasHeight = layout.height + CARD.margin * 2;
-      const scale = canvasHeight * 2 <= 16000 ? 2 : 1;
+      const scale = layout.height * 2 <= 16000 ? 2 : 1;
       const canvas = document.createElement('canvas');
-      canvas.width = Math.round(canvasWidth * scale);
-      canvas.height = Math.round(canvasHeight * scale);
+      canvas.width = Math.round(layout.width * scale);
+      canvas.height = Math.round(layout.height * scale);
       const ctx = canvas.getContext('2d');
       ctx.scale(scale, scale);
       ctx.textBaseline = 'alphabetic';
-
-      // Soft page gradient, then the raised card with a light shadow.
-      const page = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-      page.addColorStop(0, COLORS.backgroundTop);
-      page.addColorStop(1, COLORS.backgroundBottom);
-      ctx.fillStyle = page;
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      const cardX = CARD.margin;
-      const cardY = CARD.margin;
-      const cardW = canvasWidth - CARD.margin * 2;
-      const cardH = layout.height;
-      ctx.save();
-      ctx.shadowColor = 'rgba(20, 29, 54, 0.10)';
-      ctx.shadowBlur = 24;
-      ctx.shadowOffsetY = 8;
-      roundRectPath(ctx, cardX, cardY, cardW, cardH, CARD.radius);
-      ctx.fillStyle = COLORS.card;
-      ctx.fill();
-      ctx.restore();
-      ctx.strokeStyle = COLORS.cardEdge;
-      ctx.lineWidth = 1;
-      roundRectPath(ctx, cardX + 0.5, cardY + 0.5, cardW - 1, cardH - 1, CARD.radius);
-      ctx.stroke();
-
-      ctx.save();
-      ctx.translate(CARD.margin, CARD.margin);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, layout.width, layout.height);
       drawOps(ctx, layout.ops);
-      ctx.restore();
 
       const dataUrl = canvas.toDataURL('image/png');
       const now = new Date();
       return {
         dataUrl,
         blob: dataUrlToBlob(dataUrl),
-        width: Math.round(canvasWidth * scale),
-        height: Math.round(canvasHeight * scale),
+        width: Math.round(layout.width * scale),
+        height: Math.round(layout.height * scale),
         fileName: 'conversation-' + timestampSuffix(now) + '.png',
         truncated: layout.truncated,
       };
@@ -875,15 +816,13 @@ window.__ModuleLoader__.load({
       }
       try {
         const view = renderShareImage({
-          title: shareState.title,
           dateText: new Intl.DateTimeFormat(localeReader(), {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
           }).format(new Date()),
           metaText: translate('card.messages', { count: messages.length }),
-          labels: { user: translate('card.you'), assistant: translate('card.assistant') },
-          footerText: translate('card.footer'),
+          disclaimer: translate('card.disclaimer'),
           truncatedNote: translate('card.truncated'),
           messages,
         });
@@ -916,8 +855,8 @@ window.__ModuleLoader__.load({
       '.dsh-shareimg-panel{width:min(960px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;border-radius:18px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);box-shadow:0 28px 72px rgba(0,0,0,.38);color:var(--dsw-alias-label-primary);animation:dsh-shareimg-panel-in .18s cubic-bezier(.2,.8,.3,1)}' +
       '@keyframes dsh-shareimg-panel-in{from{opacity:0;transform:translateY(8px) scale(.996)}to{opacity:1;transform:none}}' +
       '.dsh-shareimg-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none}' +
-      '.dsh-shareimg-mark{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#5b78ff,#7a5cff);color:#ffffff;display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(77,107,254,.32)}' +
-      '.dsh-shareimg-mark svg{width:17px;height:17px}' +
+      '.dsh-shareimg-mark{width:32px;height:32px;border-radius:9px;background:#4d6bfe;color:#ffffff;display:grid;place-items:center;flex:none}' +
+      '.dsh-shareimg-mark svg{width:20px;height:20px}' +
       '.dsh-shareimg-headtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}' +
       '.dsh-shareimg-title{font-size:14px;font-weight:600;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
       '.dsh-shareimg-subtitle{font-size:11.5px;line-height:16px;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
@@ -977,6 +916,14 @@ window.__ModuleLoader__.load({
           strokeLinecap: 'round',
           strokeLinejoin: 'round',
         }),
+      );
+    }
+
+    function WhaleGlyph() {
+      return h(
+        'svg',
+        { viewBox: '-4 -4 58 58', width: 22, height: 22, 'aria-hidden': true, focusable: false },
+        h('path', { d: WHALE_PATH, fill: 'currentColor' }),
       );
     }
 
@@ -1285,7 +1232,7 @@ window.__ModuleLoader__.load({
             h(
               'div',
               { className: 'dsh-shareimg-head' },
-              h('div', { className: 'dsh-shareimg-mark', 'aria-hidden': true }, h(ShareGlyph)),
+              h('div', { className: 'dsh-shareimg-mark', 'aria-hidden': true }, h(WhaleGlyph)),
               h(
                 'div',
                 { className: 'dsh-shareimg-headtext' },
@@ -1387,7 +1334,7 @@ window.__ModuleLoader__.load({
               'card.assistant': 'Assistant',
               'card.image': 'Image',
               'card.file': 'File',
-              'card.footer': 'Shared from DeepSeek Harness',
+              'card.disclaimer': 'AI-generated content may contain mistakes.',
               'card.truncated':
                 'Long conversation: only the most recent messages fit in one image.',
             },
@@ -1417,7 +1364,7 @@ window.__ModuleLoader__.load({
               'card.assistant': '\u52a9\u624b',
               'card.image': '\u56fe\u7247',
               'card.file': '\u6587\u4ef6',
-              'card.footer': '\u6765\u81ea DeepSeek Harness \u7684\u5bf9\u8bdd\u5206\u4eab',
+              'card.disclaimer': '\u5185\u5bb9\u7531 AI \u751f\u6210\uff0c\u8bf7\u81ea\u884c\u6838\u5b9e\u3002',
               'card.truncated':
                 '\u5bf9\u8bdd\u8fc7\u957f\uff0c\u4e00\u5f20\u56fe\u7247\u53ea\u5bb9\u7eb3\u4e86\u6700\u8fd1\u7684\u6d88\u606f\u3002',
             },
