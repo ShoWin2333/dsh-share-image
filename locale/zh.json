@@ -15,7 +15,6 @@
   "card.messages": "{count} 条消息",
   "card.you": "你",
   "card.assistant": "助手",
-  "card.footer": "来自 DeepSeek Harness 的对话分享",
   "card.truncated": "对话过长，一张图片只容纳了最近的消息。",
   "card.image": "图片",
   "card.file": "文件",
@@ -27,5 +26,6 @@
   "select.generate": "生成图片",
   "select.cancel": "取消",
   "select.empty": "请至少选择一条消息。",
-  "preview.back": "返回选择"
+  "preview.back": "返回选择",
+  "card.disclaimer": "内容由 AI 生成，请自行核实。"
 }

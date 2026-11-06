@@ -1,9 +1,9 @@
 /**
  * Share-as-image browser half.
  *
- * Adds a compact action to the composer toolbar, builds a PNG card of the
- * bound Conversation with Canvas 2D, and previews it in the frame-wide
- * overlay with Download and Copy actions.
+ * Adds a picture action to every finalized assistant reply, renders the
+ * selected messages into a PNG card with Canvas 2D, and previews it in the
+ * frame-wide overlay with Download and Copy actions.
  */
 window.__ModuleLoader__.load({
   id: '@showin2333/dsh-plugin-share-image',
@@ -28,27 +28,54 @@ window.__ModuleLoader__.load({
 
     const CARD = {
       width: 760,
-      pad: 44,
+      pad: 88,
       maxHeight: 6200,
       brand: '#4d6bfe',
     };
 
     const COLORS = {
-      title: '#111827',
+      ink: '#14171c',
       body: '#1f2328',
       meta: '#8a919c',
-      muted: '#9aa1ac',
-      divider: '#eceef2',
+      divider: '#eef0f4',
+      marker: '#6b7280',
       codeBg: '#f6f7f9',
       codeBorder: '#e8eaef',
       codeText: '#374151',
-      quoteText: '#4b5563',
-      warn: '#b45309',
-      userChipBg: '#eef3ff',
-      userChipText: '#3b5bdb',
-      assistantChipBg: '#f2f3f5',
-      assistantChipText: '#4b5563',
+      quoteBar: '#d8dee9',
+      quoteText: '#5b6472',
+      warnBg: '#fff8ed',
+      warnBorder: '#fbe2c0',
+      warnText: '#b45309',
+      markTile: '#4d6bfe',
+      markWhale: '#ffffff',
     };
+
+    /** Assistant text palette (default) and the inverted palette for the bubble. */
+    const ASSISTANT_THEME = {
+      heading: COLORS.ink,
+      body: COLORS.body,
+      marker: COLORS.marker,
+      quoteBar: COLORS.quoteBar,
+      quoteText: COLORS.quoteText,
+      codeBg: COLORS.codeBg,
+      codeBorder: COLORS.codeBorder,
+      codeText: COLORS.codeText,
+    };
+
+    const BUBBLE_THEME = {
+      heading: '#ffffff',
+      body: '#ffffff',
+      marker: 'rgba(255, 255, 255, 0.72)',
+      quoteBar: 'rgba(255, 255, 255, 0.55)',
+      quoteText: 'rgba(255, 255, 255, 0.9)',
+      codeBg: 'rgba(255, 255, 255, 0.16)',
+      codeBorder: 'rgba(255, 255, 255, 0.26)',
+      codeText: '#f4f7ff',
+    };
+
+    /** Official DSH whale mark: single path from the bundled 50×50 favicon. */
+    const WHALE_PATH = 'M48.8354 10.0479C48.3232 9.79199 48.1025 10.2798 47.8032 10.5278C47.7007 10.6079 47.6143 10.7119 47.5273 10.8076C46.7793 11.624 45.9048 12.1597 44.7622 12.0957C43.0923 12 41.666 12.5356 40.4058 13.8398C40.1377 12.2319 39.2476 11.272 37.8926 10.6558C37.1836 10.3359 36.4668 10.0156 35.9702 9.31982C35.6235 8.82373 35.5293 8.27197 35.356 7.72754C35.2456 7.3999 35.1353 7.06396 34.7651 7.00781C34.3633 6.94385 34.2056 7.2876 34.0479 7.57568C33.418 8.75195 33.1733 10.0479 33.1973 11.3599C33.2524 14.312 34.4736 16.6641 36.8999 18.3359C37.1758 18.5278 37.2466 18.7197 37.1597 19C36.9946 19.5757 36.7974 20.1357 36.624 20.7119C36.5137 21.0801 36.3486 21.1597 35.9624 21C34.6309 20.4321 33.481 19.5918 32.4644 18.5757C30.7393 16.8721 29.1792 14.9917 27.2334 13.52C26.7764 13.1758 26.3193 12.856 25.8467 12.5518C23.8618 10.584 26.1069 8.96777 26.627 8.77588C27.1704 8.57568 26.8159 7.8877 25.0591 7.896C23.3022 7.90381 21.6953 8.50391 19.647 9.30371C19.3477 9.42383 19.0322 9.51172 18.7095 9.58398C16.8501 9.22363 14.9199 9.14355 12.9033 9.37598C9.10596 9.80762 6.07275 11.6396 3.84326 14.7681C1.16455 18.5278 0.53418 22.7998 1.30664 27.2559C2.11768 31.9521 4.46582 35.8398 8.07373 38.8799C11.8159 42.0322 16.1255 43.5762 21.041 43.2803C24.0269 43.104 27.3516 42.6963 31.1016 39.4561C32.0469 39.936 33.0396 40.1279 34.686 40.272C35.9546 40.3921 37.1758 40.208 38.1211 40.0078C39.6021 39.688 39.4995 38.2881 38.9639 38.0322C34.623 35.9678 35.5762 36.8081 34.71 36.1279C36.9155 33.4639 40.2402 30.6958 41.54 21.728C41.6426 21.0161 41.5557 20.5679 41.54 19.9917C41.5322 19.6396 41.6108 19.5039 42.0049 19.4639C43.0923 19.3359 44.1479 19.0317 45.1167 18.4878C47.9292 16.9199 49.064 14.3438 49.3315 11.2559C49.3711 10.7837 49.3237 10.2959 48.8354 10.0479ZM24.3262 37.8398C20.1196 34.4639 18.0791 33.3521 17.2358 33.3999C16.4482 33.4482 16.5898 34.3682 16.7632 34.9678C16.9443 35.5601 17.1812 35.9683 17.5117 36.4878C17.7402 36.832 17.8979 37.3442 17.2832 37.728C15.9282 38.584 13.5728 37.4399 13.4624 37.3838C10.7207 35.7358 8.42822 33.5601 6.81348 30.584C5.25342 27.7197 4.34766 24.6479 4.19775 21.3677C4.1582 20.5757 4.38672 20.2959 5.15869 20.1519C6.17529 19.96 7.22314 19.9199 8.23926 20.0718C12.5327 20.7119 16.1885 22.6719 19.2529 25.7759C21.002 27.5439 22.3252 29.6558 23.6885 31.7202C25.1377 33.9121 26.6978 36 28.6831 37.7119C29.3843 38.312 29.9434 38.7681 30.479 39.104C28.8643 39.2881 26.1699 39.3281 24.3262 37.8398ZM26.3433 24.6001C26.3433 24.248 26.6191 23.9678 26.9658 23.9678C27.0444 23.9678 27.1152 23.9839 27.1782 24.0078C27.2651 24.04 27.3438 24.0879 27.4067 24.1602C27.5171 24.272 27.5801 24.4321 27.5801 24.6001C27.5801 24.9521 27.3042 25.2319 26.9575 25.2319C26.6108 25.2319 26.3433 24.9521 26.3433 24.6001ZM32.6064 27.8799C32.2046 28.0479 31.8027 28.1919 31.4165 28.208C30.8179 28.2397 30.1641 27.9922 29.8096 27.688C29.2583 27.2158 28.8643 26.9521 28.6987 26.1279C28.6279 25.7759 28.6675 25.2319 28.7305 24.9199C28.8721 24.248 28.7144 23.8159 28.2495 23.4238C27.8716 23.104 27.3911 23.0161 26.8633 23.0161C26.666 23.0161 26.4849 22.9277 26.3511 22.856C26.1304 22.7441 25.9492 22.4639 26.1226 22.1201C26.1777 22.0078 26.4458 21.7358 26.5088 21.688C27.2256 21.272 28.0527 21.4077 28.8169 21.7197C29.5259 22.0161 30.0615 22.5601 30.834 23.3281C31.6216 24.2559 31.7632 24.5117 32.2124 25.208C32.5669 25.752 32.8901 26.312 33.1104 26.9521C33.2446 27.3521 33.0713 27.6802 32.6064 27.8799Z';
 
     let measureCanvas = null;
     function measureContext() {
@@ -300,35 +327,38 @@ window.__ModuleLoader__.load({
     }
 
     function blockGap(block) {
-      if (block.kind === 'item') return 6;
-      if (block.kind === 'heading') return 10;
-      return 12;
+      if (block.kind === 'item') return 8;
+      if (block.kind === 'heading') return 14;
+      return 15;
     }
 
-    function layoutMessageBlocks(ops, blocks, startY, x, width, measure) {
+    function layoutMessageBlocks(ops, blocks, startY, x, width, measure, theme) {
+      const palette = theme === undefined ? ASSISTANT_THEME : theme;
       let y = startY;
+      const lastIndex = blocks.length - 1;
       blocks.forEach((block, index) => {
+        const trailing = index === lastIndex ? 0 : blockGap(block);
         if (block.kind === 'heading') {
-          const size = block.level <= 1 ? 20 : block.level === 2 ? 18 : 16;
-          const font = '600 ' + size + 'px ' + SANS;
-          if (index > 0) y += 6;
+          const size = block.level <= 1 ? 19 : block.level === 2 ? 17.5 : 16;
+          const font = '700 ' + size + 'px ' + SANS;
+          if (index > 0) y += 8;
           const lines = wrapText(measure, block.text, width, font);
-          y = emitLines(ops, lines, x, y, font, COLORS.title, size + 10, size * 0.82 + 3);
-          y += 8;
+          y = emitLines(ops, lines, x, y, font, palette.heading, size + 11, size * 0.8 + 3);
+          y += index === lastIndex ? 0 : 6;
           return;
         }
         if (block.kind === 'code') {
           const font = '12.5px ' + MONO;
-          const pad = 14;
-          const lineHeight = 19;
+          const pad = 15;
+          const lineHeight = 20;
           const lines = [];
           for (const raw of block.lines) {
             lines.push(...wrapText(measure, raw === '' ? ' ' : raw, width - pad * 2, font));
           }
           if (lines.length === 0) lines.push(' ');
           const height = pad * 2 + lines.length * lineHeight;
-          ops.push({ t: 'rect', x, y, w: width, h: height, r: 9, c: COLORS.codeBg });
-          ops.push({ t: 'stroke', x, y, w: width, h: height, r: 9, c: COLORS.codeBorder });
+          ops.push({ t: 'rect', x, y, w: width, h: height, r: 10, c: palette.codeBg });
+          ops.push({ t: 'stroke', x, y, w: width, h: height, r: 10, c: palette.codeBorder });
           let cursor = y + pad;
           for (const line of lines) {
             ops.push({
@@ -337,44 +367,44 @@ window.__ModuleLoader__.load({
               x: x + pad,
               y: cursor + 13.5,
               f: font,
-              c: COLORS.codeText,
+              c: palette.codeText,
             });
             cursor += lineHeight;
           }
-          y += height + blockGap(block);
+          y += height + trailing;
           return;
         }
         if (block.kind === 'quote') {
           const font = '15px ' + SANS;
-          const lineHeight = 24;
-          const lines = wrapText(measure, block.text, width - 18, font);
+          const lineHeight = 25;
+          const lines = wrapText(measure, block.text, width - 20, font);
           ops.push({
             t: 'rect',
             x,
             y: y + 3,
             w: 3,
-            h: Math.max(lines.length * lineHeight - 6, 6),
+            h: Math.max(lines.length * lineHeight - 8, 8),
             r: 1.5,
-            c: '#c7d2fe',
+            c: palette.quoteBar,
           });
-          y = emitLines(ops, lines, x + 18, y, font, COLORS.quoteText, lineHeight, 17.5);
-          y += blockGap(block);
+          y = emitLines(ops, lines, x + 20, y, font, palette.quoteText, lineHeight, 18);
+          y += trailing;
           return;
         }
         if (block.kind === 'item') {
           const font = '15px ' + SANS;
-          const lineHeight = 24;
-          const lines = wrapText(measure, block.text, width - 24, font);
-          ops.push({ t: 'text', s: block.marker, x, y: y + 17.5, f: font, c: '#6b7280' });
-          y = emitLines(ops, lines, x + 24, y, font, COLORS.body, lineHeight, 17.5);
-          y += blockGap(block);
+          const lineHeight = 26;
+          const lines = wrapText(measure, block.text, width - 26, font);
+          ops.push({ t: 'text', s: block.marker, x, y: y + 18, f: font, c: palette.marker });
+          y = emitLines(ops, lines, x + 26, y, font, palette.body, lineHeight, 18);
+          y += trailing;
           return;
         }
         const font = '15px ' + SANS;
-        const lineHeight = 25;
+        const lineHeight = 26;
         const lines = wrapText(measure, block.text, width, font);
-        y = emitLines(ops, lines, x, y, font, COLORS.body, lineHeight, 18.2);
-        y += blockGap(block);
+        y = emitLines(ops, lines, x, y, font, palette.body, lineHeight, 18);
+        y += trailing;
       });
       return y;
     }
@@ -392,6 +422,38 @@ window.__ModuleLoader__.load({
       ctx.lineTo(x, y + radius);
       ctx.arcTo(x, y, x + radius, y, radius);
       ctx.closePath();
+    }
+
+    let whaleShape = null;
+
+    function whalePath() {
+      if (whaleShape === null && typeof Path2D !== 'undefined') {
+        whaleShape = new Path2D(WHALE_PATH);
+      }
+      return whaleShape;
+    }
+
+    /** Official DSH whale, filled at the requested size. */
+    function paintWhale(ctx, x, y, size, color) {
+      const shape = whalePath();
+      if (shape === null) return;
+      const inset = size * 0.14;
+      const unit = (size - inset * 2) / 50;
+      ctx.save();
+      ctx.translate(x + inset, y + inset);
+      ctx.scale(unit, unit);
+      ctx.fillStyle = color;
+      ctx.fill(shape);
+      ctx.restore();
+    }
+
+    /** Blue tile holding the official whale in white. */
+    function paintMark(ctx, op) {
+      const { x, y, s } = op;
+      roundRectPath(ctx, x, y, s, s, s * 0.28);
+      ctx.fillStyle = COLORS.markTile;
+      ctx.fill();
+      paintWhale(ctx, x, y, s, COLORS.markWhale);
     }
 
     function drawOps(ctx, ops) {
@@ -412,6 +474,13 @@ window.__ModuleLoader__.load({
           ctx.moveTo(op.x1, op.y1 + 0.5);
           ctx.lineTo(op.x2, op.y2 + 0.5);
           ctx.stroke();
+        } else if (op.t === 'dot') {
+          ctx.beginPath();
+          ctx.arc(op.x, op.y, op.r, 0, Math.PI * 2);
+          ctx.fillStyle = op.c;
+          ctx.fill();
+        } else if (op.t === 'mark') {
+          paintMark(ctx, op);
         } else if (op.t === 'text') {
           ctx.font = op.f;
           ctx.fillStyle = op.c;
@@ -420,121 +489,176 @@ window.__ModuleLoader__.load({
       }
     }
 
+    function measureTextWidth(measure, text, font) {
+      measure.font = font;
+      return measure.measureText(text).width;
+    }
+
+    /** Lay out parsed markdown at the origin so callers can place or box it. */
+    function renderBlocks(text, width, measure, theme) {
+      const ops = [];
+      const height = layoutMessageBlocks(ops, parseBlocks(text), 0, 0, width, measure, theme);
+      return { ops, height };
+    }
+
+    function naturalContentWidth(content, measure) {
+      let width = 0;
+      for (const op of content.ops) {
+        if (op.t === 'text') {
+          width = Math.max(width, measureTextWidth(measure, op.s, op.f));
+        } else if (op.t === 'rect' || op.t === 'stroke') {
+          width = Math.max(width, op.w);
+        } else if (op.t === 'line') {
+          width = Math.max(width, Math.abs(op.x2 - op.x1));
+        }
+      }
+      return width;
+    }
+
+    function shiftOps(target, ops, dx, dy) {
+      for (const op of ops) {
+        if (op.x !== undefined) op.x += dx;
+        if (op.y !== undefined) op.y += dy;
+        if (op.x1 !== undefined) {
+          op.x1 += dx;
+          op.x2 += dx;
+          op.y1 += dy;
+          op.y2 += dy;
+        }
+        target.push(op);
+      }
+    }
+
     function buildLayout(options) {
       const measure = measureContext();
       const ops = [];
       const width = CARD.width;
       const pad = CARD.pad;
-      const left = pad;
       const contentWidth = width - pad * 2;
-      let y = pad;
+      const left = pad;
+      const right = width - pad;
+      let y = 36;
 
-      // Brand row: rounded mark with three dots, wordmark, date.
-      ops.push({ t: 'rect', x: left, y, w: 34, h: 34, r: 10, c: CARD.brand });
-      for (let index = 0; index < 3; index += 1) {
-        ops.push({
-          t: 'rect',
-          x: left + 9 + index * 7,
-          y: y + 14.5,
-          w: 3.6,
-          h: 3.6,
-          r: 1.8,
-          c: '#ffffff',
-        });
-      }
+      // Compact left-aligned brand header; the date sits on the right.
+      const markSize = 30;
+      ops.push({ t: 'mark', x: left, y, s: markSize });
       ops.push({
         t: 'text',
-        s: 'DEEPSEEK HARNESS',
-        x: left + 46,
-        y: y + 21.5,
-        f: '600 12px ' + SANS,
-        c: '#6b7280',
+        s: 'DeepSeek Harness',
+        x: left + markSize + 10,
+        y: y + 20,
+        f: '600 13.5px ' + SANS,
+        c: COLORS.ink,
       });
       const dateFont = '12px ' + SANS;
-      measure.font = dateFont;
-      const dateWidth = measure.measureText(options.dateText).width;
+      const dateWidth = measureTextWidth(measure, options.dateText, dateFont);
       ops.push({
         t: 'text',
         s: options.dateText,
-        x: width - pad - dateWidth,
-        y: y + 21.5,
+        x: right - dateWidth,
+        y: y + 19,
         f: dateFont,
-        c: COLORS.muted,
-      });
-
-      y += 34 + 28;
-
-      const titleFont = '600 26px ' + SANS;
-      const titleLines = wrapText(measure, options.title, contentWidth, titleFont);
-      const shownTitle = titleLines.slice(0, 3);
-      for (const line of shownTitle) {
-        ops.push({ t: 'text', s: line, x: left, y: y + 26, f: titleFont, c: COLORS.title });
-        y += 34;
-      }
-      y += 4;
-      ops.push({
-        t: 'text',
-        s: options.metaText,
-        x: left,
-        y: y + 16,
-        f: '13px ' + SANS,
         c: COLORS.meta,
       });
-      y += 16 + 22;
-      ops.push({ t: 'line', x1: left, y1: y, x2: width - pad, y2: y, c: COLORS.divider });
+
+      y += markSize + 18;
+      ops.push({ t: 'line', x1: left, y1: y, x2: right, y2: y, c: COLORS.divider });
       y += 26;
 
       let truncated = false;
       for (const message of options.messages) {
-        if (y > CARD.maxHeight - 300) {
+        if (y > CARD.maxHeight - 320) {
           truncated = true;
           break;
         }
-        const isUser = message.role === 'user';
-        const roleLabel = isUser ? options.labels.user : options.labels.assistant;
-        const chipFont = '600 11px ' + SANS;
-        measure.font = chipFont;
-        const chipWidth = measure.measureText(roleLabel).width + 16;
-        ops.push({
-          t: 'rect',
-          x: left,
-          y,
-          w: chipWidth,
-          h: 20,
-          r: 6,
-          c: isUser ? COLORS.userChipBg : COLORS.assistantChipBg,
-        });
-        ops.push({
-          t: 'text',
-          s: roleLabel,
-          x: left + 8,
-          y: y + 14,
-          f: chipFont,
-          c: isUser ? COLORS.userChipText : COLORS.assistantChipText,
-        });
-        y += 20 + 13;
-        y = layoutMessageBlocks(ops, parseBlocks(message.text), y, left, contentWidth, measure) + 22;
+        if (message.role === 'user') {
+          const maxBubble = Math.round(contentWidth * 0.8);
+          const bubblePadX = 16;
+          const bubblePadY = 12;
+          const content = renderBlocks(
+            message.text,
+            maxBubble - bubblePadX * 2,
+            measure,
+            BUBBLE_THEME,
+          );
+          const natural = naturalContentWidth(content, measure);
+          const bubbleWidth = Math.min(
+            maxBubble,
+            Math.max(120, Math.ceil(natural + bubblePadX * 2)),
+          );
+          const bubbleHeight = Math.ceil(content.height + bubblePadY * 2);
+          const bubbleX = right - bubbleWidth;
+          ops.push({
+            t: 'rect',
+            x: bubbleX,
+            y,
+            w: bubbleWidth,
+            h: bubbleHeight,
+            r: 14,
+            c: CARD.brand,
+          });
+          shiftOps(ops, content.ops, bubbleX + bubblePadX, y + bubblePadY);
+          y += bubbleHeight + 24;
+        } else {
+          const content = renderBlocks(message.text, contentWidth, measure);
+          shiftOps(ops, content.ops, left, y);
+          y += content.height + 26;
+        }
       }
 
       if (truncated) {
         const font = '12.5px ' + SANS;
-        const lines = wrapText(measure, options.truncatedNote, contentWidth, font);
-        y = emitLines(ops, lines, left, y + 2, font, COLORS.warn, 19, 13.5) + 6;
+        const lines = wrapText(measure, options.truncatedNote, contentWidth - 32, font);
+        const height = lines.length * 19 + 22;
+        ops.push({ t: 'rect', x: left, y, w: contentWidth, h: height, r: 10, c: COLORS.warnBg });
+        ops.push({
+          t: 'stroke',
+          x: left,
+          y,
+          w: contentWidth,
+          h: height,
+          r: 10,
+          c: COLORS.warnBorder,
+        });
+        emitLines(ops, lines, left + 16, y + 11, font, COLORS.warnText, 19, 13.5);
+        y += height + 16;
       }
 
-      y += 6;
-      ops.push({ t: 'line', x1: left, y1: y, x2: width - pad, y2: y, c: COLORS.divider });
-      y += 22;
+      // Footer: the same brand rule at a smaller size.
+      y += 12;
+      ops.push({ t: 'line', x1: left, y1: y, x2: right, y2: y, c: COLORS.divider });
+      y += 18;
+      const smallMark = 20;
+      ops.push({ t: 'mark', x: left, y, s: smallMark });
       ops.push({
         t: 'text',
-        s: options.footerText,
-        x: left,
-        y: y + 11,
-        f: '11.5px ' + SANS,
-        c: COLORS.muted,
+        s: 'DeepSeek Harness',
+        x: left + smallMark + 8,
+        y: y + 10,
+        f: '600 11.5px ' + SANS,
+        c: COLORS.ink,
       });
+      ops.push({
+        t: 'text',
+        s: options.disclaimer,
+        x: left + smallMark + 8,
+        y: y + 23,
+        f: '10.5px ' + SANS,
+        c: COLORS.meta,
+      });
+      const countFont = '11px ' + SANS;
+      const countWidth = measureTextWidth(measure, options.metaText, countFont);
+      ops.push({
+        t: 'text',
+        s: options.metaText,
+        x: right - countWidth,
+        y: y + 14,
+        f: countFont,
+        c: COLORS.meta,
+      });
+      y += 30;
 
-      return { ops, height: Math.ceil(y + pad), width, truncated };
+      return { ops, height: Math.ceil(y + 48), width, truncated };
     }
 
     function dataUrlToBlob(dataUrl) {
@@ -570,10 +694,11 @@ window.__ModuleLoader__.load({
       canvas.height = Math.round(layout.height * scale);
       const ctx = canvas.getContext('2d');
       ctx.scale(scale, scale);
+      ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, layout.width, layout.height);
-      ctx.textBaseline = 'alphabetic';
       drawOps(ctx, layout.ops);
+
       const dataUrl = canvas.toDataURL('image/png');
       const now = new Date();
       return {
@@ -691,15 +816,13 @@ window.__ModuleLoader__.load({
       }
       try {
         const view = renderShareImage({
-          title: shareState.title,
           dateText: new Intl.DateTimeFormat(localeReader(), {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
           }).format(new Date()),
           metaText: translate('card.messages', { count: messages.length }),
-          labels: { user: translate('card.you'), assistant: translate('card.assistant') },
-          footerText: translate('card.footer'),
+          disclaimer: translate('card.disclaimer'),
           truncatedNote: translate('card.truncated'),
           messages,
         });
@@ -724,43 +847,48 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
 
     const CSS =
-      '.dsh-shareimg-btn{width:28px;height:28px;border-radius:999px;border:0;padding:0;background:transparent;color:var(--dsw-alias-label-secondary);display:grid;place-items:center;cursor:pointer;flex:none}' +
-      '.dsh-shareimg-btn:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}' +
-      '.dsh-shareimg-btn:disabled{opacity:.4;cursor:default}' +
-      '.dsh-shareimg-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-msgbtn{width:28px;height:28px;border-radius:6px;border:0;background:transparent;color:var(--dsw-alias-label-secondary);display:inline-flex;align-items:center;justify-content:center;padding:6px;cursor:pointer;flex:none}' +
-      '.dsh-shareimg-msgbtn:hover{background:var(--dsw-alias-bg-layer-2)}' +
+      '.dsh-shareimg-msgbtn:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}' +
       '.dsh-shareimg-msgbtn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-msgbtn svg{width:17px;height:17px}' +
       '.dsh-shareimg-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,12,16,.55);pointer-events:auto;overscroll-behavior:contain}' +
-      '.dsh-shareimg-panel{width:min(960px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;border-radius:16px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);box-shadow:0 24px 64px rgba(0,0,0,.35);color:var(--dsw-alias-label-primary)}' +
+      '.dsh-shareimg-panel{width:min(960px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;border-radius:18px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);box-shadow:0 28px 72px rgba(0,0,0,.38);color:var(--dsw-alias-label-primary);animation:dsh-shareimg-panel-in .18s cubic-bezier(.2,.8,.3,1)}' +
+      '@keyframes dsh-shareimg-panel-in{from{opacity:0;transform:translateY(8px) scale(.996)}to{opacity:1;transform:none}}' +
       '.dsh-shareimg-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none}' +
-      '.dsh-shareimg-title{font-size:14px;font-weight:600;line-height:20px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.dsh-shareimg-mark{width:32px;height:32px;border-radius:9px;background:#4d6bfe;color:#ffffff;display:grid;place-items:center;flex:none}' +
+      '.dsh-shareimg-mark svg{width:20px;height:20px}' +
+      '.dsh-shareimg-headtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}' +
+      '.dsh-shareimg-title{font-size:14px;font-weight:600;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.dsh-shareimg-subtitle{font-size:11.5px;line-height:16px;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
       '.dsh-shareimg-close{width:28px;height:28px;border-radius:8px;border:0;background:transparent;color:var(--dsw-alias-label-secondary);display:grid;place-items:center;cursor:pointer;flex:none}' +
-      '.dsh-shareimg-close:hover{background:var(--dsw-alias-bg-layer-2)}' +
+      '.dsh-shareimg-close:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}' +
       '.dsh-shareimg-close:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-select{display:flex;flex-direction:column;flex:1;min-height:0}' +
-      '.dsh-shareimg-toolbar{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none}' +
+      '.dsh-shareimg-toolbar{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none;background:var(--dsw-alias-bg-layer-2)}' +
       '.dsh-shareimg-count{flex:1;min-width:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-      '.dsh-shareimg-link{border:0;background:transparent;color:var(--dsw-alias-brand-primary);font-size:12px;font-weight:500;line-height:18px;cursor:pointer;padding:3px 6px;border-radius:6px;white-space:nowrap}' +
-      '.dsh-shareimg-link:hover{background:var(--dsw-alias-bg-layer-2)}' +
+      '.dsh-shareimg-link{border:0;background:transparent;color:var(--dsw-alias-brand-primary);font-size:12px;font-weight:500;line-height:18px;cursor:pointer;padding:3px 7px;border-radius:6px;white-space:nowrap}' +
+      '.dsh-shareimg-link:hover{background:var(--dsw-alias-bg-layer-1)}' +
       '.dsh-shareimg-link:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-list{overflow:auto;padding:8px;display:flex;flex-direction:column;gap:2px;flex:1;min-height:0}' +
-      '.dsh-shareimg-row{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer}' +
+      '.dsh-shareimg-row{display:flex;align-items:flex-start;gap:12px;padding:10px 10px;border-radius:9px;cursor:pointer}' +
       '.dsh-shareimg-row:hover{background:var(--dsw-alias-bg-layer-2)}' +
-      '.dsh-shareimg-check{width:15px;height:15px;margin:2px 0 0;accent-color:var(--dsw-alias-brand-primary);flex:none;cursor:pointer}' +
-      '.dsh-shareimg-rowrole{font-size:11px;font-weight:600;line-height:19px;color:var(--dsw-alias-label-secondary);flex:none;min-width:52px}' +
+      '.dsh-shareimg-check{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin:0;border-radius:6px;border:1.5px solid var(--dsw-alias-border-l2);background:transparent;flex:none;cursor:pointer;position:relative;transition:background .12s,border-color .12s}' +
+      '.dsh-shareimg-check:hover{border-color:var(--dsw-alias-brand-primary)}' +
+      '.dsh-shareimg-check:checked{background-color:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'M3.5 8.5l3 3 6-7\' fill=\'none\' stroke=\'%23ffffff\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:12px 12px}' +
+      '.dsh-shareimg-check:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}' +
+      '.dsh-shareimg-rowrole{font-size:11px;font-weight:600;line-height:18px;color:var(--dsw-alias-label-secondary);flex:none;min-width:52px;padding-top:1px}' +
+      '.dsh-shareimg-row[data-role=user] .dsh-shareimg-rowrole{color:var(--dsw-alias-brand-primary)}' +
       '.dsh-shareimg-rowtext{font-size:13px;line-height:19px;color:var(--dsw-alias-label-primary);min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}' +
-      '.dsh-shareimg-body{overflow:auto;padding:16px;background:var(--dsw-alias-bg-layer-2);flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start}' +
-      '.dsh-shareimg-image{display:block;max-width:100%;height:auto;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18)}' +
-      '.dsh-shareimg-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--dsw-alias-border-l1);flex:none;flex-wrap:wrap}' +
+      '.dsh-shareimg-body{overflow:auto;padding:18px;background:var(--dsw-alias-bg-layer-2);flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start}' +
+      '.dsh-shareimg-image{display:block;max-width:100%;height:auto;border-radius:12px;box-shadow:0 10px 32px rgba(0,0,0,.20)}' +
+      '.dsh-shareimg-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--dsw-alias-border-l1);flex:none;flex-wrap:wrap;background:var(--dsw-alias-bg-layer-1)}' +
       '.dsh-shareimg-status{flex:1;min-width:120px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}' +
       '.dsh-shareimg-status[data-tone=error]{color:var(--dsw-alias-state-error-primary)}' +
-      '.dsh-shareimg-action{height:32px;padding:0 14px;border-radius:8px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}' +
+      '.dsh-shareimg-action{height:34px;padding:0 15px;border-radius:9px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s}' +
       '.dsh-shareimg-action:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}' +
       '.dsh-shareimg-action:disabled{opacity:.45;cursor:default}' +
       '.dsh-shareimg-action:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}' +
-      '.dsh-shareimg-action[data-variant=primary]{background:var(--dsw-alias-brand-primary);border-color:transparent;color:#ffffff}' +
+      '.dsh-shareimg-action[data-variant=primary]{background:var(--dsw-alias-brand-primary);border-color:transparent;color:#ffffff;box-shadow:0 1px 2px rgba(0,0,0,.12)}' +
       '.dsh-shareimg-action[data-variant=primary]:hover:not(:disabled){filter:brightness(1.06)}';
 
     /* ------------------------------------------------------------------ *
@@ -788,6 +916,14 @@ window.__ModuleLoader__.load({
           strokeLinecap: 'round',
           strokeLinejoin: 'round',
         }),
+      );
+    }
+
+    function WhaleGlyph() {
+      return h(
+        'svg',
+        { viewBox: '-4 -4 58 58', width: 22, height: 22, 'aria-hidden': true, focusable: false },
+        h('path', { d: WHALE_PATH, fill: 'currentColor' }),
       );
     }
 
@@ -1096,10 +1232,18 @@ window.__ModuleLoader__.load({
             h(
               'div',
               { className: 'dsh-shareimg-head' },
+              h('div', { className: 'dsh-shareimg-mark', 'aria-hidden': true }, h(WhaleGlyph)),
               h(
                 'div',
-                { className: 'dsh-shareimg-title' },
-                selectStage ? t('select.title') : t('dialog.title'),
+                { className: 'dsh-shareimg-headtext' },
+                h(
+                  'div',
+                  { className: 'dsh-shareimg-title' },
+                  selectStage ? t('select.title') : t('dialog.title'),
+                ),
+                state.title !== ''
+                  ? h('div', { className: 'dsh-shareimg-subtitle' }, state.title)
+                  : null,
               ),
               h(
                 'button',
@@ -1190,7 +1334,7 @@ window.__ModuleLoader__.load({
               'card.assistant': 'Assistant',
               'card.image': 'Image',
               'card.file': 'File',
-              'card.footer': 'Shared from DeepSeek Harness',
+              'card.disclaimer': 'AI-generated content may contain mistakes.',
               'card.truncated':
                 'Long conversation: only the most recent messages fit in one image.',
             },
@@ -1220,7 +1364,7 @@ window.__ModuleLoader__.load({
               'card.assistant': '\u52a9\u624b',
               'card.image': '\u56fe\u7247',
               'card.file': '\u6587\u4ef6',
-              'card.footer': '\u6765\u81ea DeepSeek Harness \u7684\u5bf9\u8bdd\u5206\u4eab',
+              'card.disclaimer': '\u5185\u5bb9\u7531 AI \u751f\u6210\uff0c\u8bf7\u81ea\u884c\u6838\u5b9e\u3002',
               'card.truncated':
                 '\u5bf9\u8bdd\u8fc7\u957f\uff0c\u4e00\u5f20\u56fe\u7247\u53ea\u5bb9\u7eb3\u4e86\u6700\u8fd1\u7684\u6d88\u606f\u3002',
             },

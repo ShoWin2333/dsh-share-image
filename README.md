@@ -6,8 +6,10 @@ card you can download or copy.
 - Pick exactly which messages go into the image.
 - One click on any assistant reply starts from that reply plus the question
   before it.
-- Rendered locally with Canvas: the card has the session title, the date,
-  user/assistant labels, code blocks, lists, and quotes.
+- Rendered locally with Canvas as a clean reading card: a compact brand
+  header, right-aligned user bubbles, assistant answers with code blocks,
+  lists, and quotes, plus a footer that repeats the brand rule and the capture
+  details.
 - Download as PNG or copy straight to the clipboard. Nothing leaves the
   browser.
 
@@ -59,9 +61,11 @@ In the picker, tick the messages to include — **Select all** picks the whole
 conversation — then choose **Create image**. The preview offers **Download
 PNG** and **Copy image**, plus **Back to selection** to change the set.
 
-The card contains the conversation title, the date, and the selected messages.
-Reasoning, tool calls, command rows, and system context are left out so the
-image reads like a transcript rather than a log.
+The card contains the selected messages: your messages sit in DeepSeek-blue
+bubbles on the right, assistant answers run as plain text on the left, and a
+header and footer carry the brand and the capture details. Reasoning, tool
+calls, command rows, and system context are left out so the image reads like a
+transcript rather than a log.
 
 ## Notes and limits
 
