@@ -1,9 +1,9 @@
 /**
  * Share-as-image browser half.
  *
- * Adds a compact action to the composer toolbar, builds a PNG card of the
- * bound Conversation with Canvas 2D, and previews it in the frame-wide
- * overlay with Download and Copy actions.
+ * Adds a picture action to every finalized assistant reply, renders the
+ * selected messages into a PNG card with Canvas 2D, and previews it in the
+ * frame-wide overlay with Download and Copy actions.
  */
 window.__ModuleLoader__.load({
   id: '@showin2333/dsh-plugin-share-image',
@@ -28,26 +28,37 @@ window.__ModuleLoader__.load({
 
     const CARD = {
       width: 760,
-      pad: 44,
+      margin: 16,
+      pad: 40,
+      radius: 20,
       maxHeight: 6200,
       brand: '#4d6bfe',
     };
 
     const COLORS = {
-      title: '#111827',
-      body: '#1f2328',
-      meta: '#8a919c',
-      muted: '#9aa1ac',
-      divider: '#eceef2',
-      codeBg: '#f6f7f9',
-      codeBorder: '#e8eaef',
+      backgroundTop: '#f7f9fd',
+      backgroundBottom: '#e8edf7',
+      card: '#ffffff',
+      cardEdge: 'rgba(20, 29, 54, 0.05)',
+      ink: '#12141a',
+      body: '#22262e',
+      meta: '#6b7482',
+      divider: '#eceff5',
+      marker: '#7c8695',
+      codeBg: '#f7f8fb',
+      codeBorder: '#e9ecf2',
       codeText: '#374151',
+      quoteBar: '#c7d2fe',
       quoteText: '#4b5563',
-      warn: '#b45309',
-      userChipBg: '#eef3ff',
+      warnBg: '#fff8ed',
+      warnBorder: '#fbe2c0',
+      warnText: '#b45309',
+      userBg: '#f4f8ff',
+      userBorder: '#e3ebfd',
+      userChipBg: '#e8efff',
       userChipText: '#3b5bdb',
-      assistantChipBg: '#f2f3f5',
-      assistantChipText: '#4b5563',
+      assistantChipBg: '#f2f3f6',
+      assistantChipText: '#5b6472',
     };
 
     let measureCanvas = null;
@@ -307,28 +318,30 @@ window.__ModuleLoader__.load({
 
     function layoutMessageBlocks(ops, blocks, startY, x, width, measure) {
       let y = startY;
+      const lastIndex = blocks.length - 1;
       blocks.forEach((block, index) => {
+        const trailing = index === lastIndex ? 0 : blockGap(block);
         if (block.kind === 'heading') {
-          const size = block.level <= 1 ? 20 : block.level === 2 ? 18 : 16;
-          const font = '600 ' + size + 'px ' + SANS;
-          if (index > 0) y += 6;
+          const size = block.level <= 1 ? 21 : block.level === 2 ? 18.5 : 16.5;
+          const font = '700 ' + size + 'px ' + SANS;
+          if (index > 0) y += 8;
           const lines = wrapText(measure, block.text, width, font);
-          y = emitLines(ops, lines, x, y, font, COLORS.title, size + 10, size * 0.82 + 3);
-          y += 8;
+          y = emitLines(ops, lines, x, y, font, COLORS.ink, size + 11, size * 0.8 + 3);
+          y += index === lastIndex ? 0 : 6;
           return;
         }
         if (block.kind === 'code') {
           const font = '12.5px ' + MONO;
-          const pad = 14;
-          const lineHeight = 19;
+          const pad = 15;
+          const lineHeight = 20;
           const lines = [];
           for (const raw of block.lines) {
             lines.push(...wrapText(measure, raw === '' ? ' ' : raw, width - pad * 2, font));
           }
           if (lines.length === 0) lines.push(' ');
           const height = pad * 2 + lines.length * lineHeight;
-          ops.push({ t: 'rect', x, y, w: width, h: height, r: 9, c: COLORS.codeBg });
-          ops.push({ t: 'stroke', x, y, w: width, h: height, r: 9, c: COLORS.codeBorder });
+          ops.push({ t: 'rect', x, y, w: width, h: height, r: 10, c: COLORS.codeBg });
+          ops.push({ t: 'stroke', x, y, w: width, h: height, r: 10, c: COLORS.codeBorder });
           let cursor = y + pad;
           for (const line of lines) {
             ops.push({
@@ -341,40 +354,40 @@ window.__ModuleLoader__.load({
             });
             cursor += lineHeight;
           }
-          y += height + blockGap(block);
+          y += height + trailing;
           return;
         }
         if (block.kind === 'quote') {
           const font = '15px ' + SANS;
           const lineHeight = 24;
-          const lines = wrapText(measure, block.text, width - 18, font);
+          const lines = wrapText(measure, block.text, width - 20, font);
           ops.push({
             t: 'rect',
             x,
             y: y + 3,
-            w: 3,
-            h: Math.max(lines.length * lineHeight - 6, 6),
-            r: 1.5,
-            c: '#c7d2fe',
+            w: 4,
+            h: Math.max(lines.length * lineHeight - 8, 8),
+            r: 2,
+            c: COLORS.quoteBar,
           });
-          y = emitLines(ops, lines, x + 18, y, font, COLORS.quoteText, lineHeight, 17.5);
-          y += blockGap(block);
+          y = emitLines(ops, lines, x + 20, y, font, COLORS.quoteText, lineHeight, 17.5);
+          y += trailing;
           return;
         }
         if (block.kind === 'item') {
           const font = '15px ' + SANS;
-          const lineHeight = 24;
-          const lines = wrapText(measure, block.text, width - 24, font);
-          ops.push({ t: 'text', s: block.marker, x, y: y + 17.5, f: font, c: '#6b7280' });
-          y = emitLines(ops, lines, x + 24, y, font, COLORS.body, lineHeight, 17.5);
-          y += blockGap(block);
+          const lineHeight = 25;
+          const lines = wrapText(measure, block.text, width - 26, font);
+          ops.push({ t: 'text', s: block.marker, x, y: y + 18, f: font, c: COLORS.marker });
+          y = emitLines(ops, lines, x + 26, y, font, COLORS.body, lineHeight, 18);
+          y += trailing;
           return;
         }
         const font = '15px ' + SANS;
         const lineHeight = 25;
         const lines = wrapText(measure, block.text, width, font);
-        y = emitLines(ops, lines, x, y, font, COLORS.body, lineHeight, 18.2);
-        y += blockGap(block);
+        y = emitLines(ops, lines, x, y, font, COLORS.body, lineHeight, 18);
+        y += trailing;
       });
       return y;
     }
@@ -392,6 +405,41 @@ window.__ModuleLoader__.load({
       ctx.lineTo(x, y + radius);
       ctx.arcTo(x, y, x + radius, y, radius);
       ctx.closePath();
+    }
+
+    /** Gradient rounded square with a white photo glyph, used as the card mark. */
+    function paintMark(ctx, op) {
+      const { x, y, s } = op;
+      ctx.save();
+      const gradient = ctx.createLinearGradient(x, y, x + s, y + s);
+      gradient.addColorStop(0, '#5b78ff');
+      gradient.addColorStop(1, '#7a5cff');
+      roundRectPath(ctx, x, y, s, s, s * 0.3);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      const frameW = s * 0.52;
+      const frameH = s * 0.4;
+      const frameX = x + (s - frameW) / 2;
+      const frameY = y + (s - frameH) / 2;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.lineWidth = Math.max(1.2, s * 0.045);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      roundRectPath(ctx, frameX, frameY, frameW, frameH, frameH * 0.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(frameX + frameW * 0.28, frameY + frameH * 0.34, Math.max(1, s * 0.045), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(frameX + frameW * 0.12, frameY + frameH * 0.82);
+      ctx.lineTo(frameX + frameW * 0.42, frameY + frameH * 0.5);
+      ctx.lineTo(frameX + frameW * 0.62, frameY + frameH * 0.72);
+      ctx.lineTo(frameX + frameW * 0.78, frameY + frameH * 0.58);
+      ctx.lineTo(frameX + frameW * 0.9, frameY + frameH * 0.82);
+      ctx.stroke();
+      ctx.restore();
     }
 
     function drawOps(ctx, ops) {
@@ -412,6 +460,13 @@ window.__ModuleLoader__.load({
           ctx.moveTo(op.x1, op.y1 + 0.5);
           ctx.lineTo(op.x2, op.y2 + 0.5);
           ctx.stroke();
+        } else if (op.t === 'dot') {
+          ctx.beginPath();
+          ctx.arc(op.x, op.y, op.r, 0, Math.PI * 2);
+          ctx.fillStyle = op.c;
+          ctx.fill();
+        } else if (op.t === 'mark') {
+          paintMark(ctx, op);
         } else if (op.t === 'text') {
           ctx.font = op.f;
           ctx.fillStyle = op.c;
@@ -420,58 +475,104 @@ window.__ModuleLoader__.load({
       }
     }
 
+    function fitEllipsis(measure, text, maxWidth, font) {
+      measure.font = font;
+      let candidate = text;
+      while (candidate.length > 0 && measure.measureText(candidate + '\u2026').width > maxWidth) {
+        candidate = candidate.slice(0, -1);
+      }
+      return candidate + '\u2026';
+    }
+
+    function measureTextWidth(measure, text, font) {
+      measure.font = font;
+      return measure.measureText(text).width;
+    }
+
+    /** Lay out parsed markdown at the origin so callers can place or box it. */
+    function renderBlocks(text, width, measure) {
+      const ops = [];
+      const height = layoutMessageBlocks(ops, parseBlocks(text), 0, 0, width, measure);
+      return { ops, height };
+    }
+
+    function naturalContentWidth(content, measure) {
+      let width = 0;
+      for (const op of content.ops) {
+        if (op.t === 'text') {
+          width = Math.max(width, measureTextWidth(measure, op.s, op.f));
+        } else if (op.t === 'rect' || op.t === 'stroke') {
+          width = Math.max(width, op.w);
+        } else if (op.t === 'line') {
+          width = Math.max(width, Math.abs(op.x2 - op.x1));
+        }
+      }
+      return width;
+    }
+
+    function shiftOps(target, ops, dx, dy) {
+      for (const op of ops) {
+        if (op.x !== undefined) op.x += dx;
+        if (op.y !== undefined) op.y += dy;
+        if (op.x1 !== undefined) {
+          op.x1 += dx;
+          op.x2 += dx;
+          op.y1 += dy;
+          op.y2 += dy;
+        }
+        target.push(op);
+      }
+    }
+
     function buildLayout(options) {
       const measure = measureContext();
       const ops = [];
       const width = CARD.width;
+      const margin = CARD.margin;
       const pad = CARD.pad;
+      const cardWidth = width - margin * 2;
+      const contentWidth = cardWidth - pad * 2;
       const left = pad;
-      const contentWidth = width - pad * 2;
+      const right = cardWidth - pad;
       let y = pad;
 
-      // Brand row: rounded mark with three dots, wordmark, date.
-      ops.push({ t: 'rect', x: left, y, w: 34, h: 34, r: 10, c: CARD.brand });
-      for (let index = 0; index < 3; index += 1) {
-        ops.push({
-          t: 'rect',
-          x: left + 9 + index * 7,
-          y: y + 14.5,
-          w: 3.6,
-          h: 3.6,
-          r: 1.8,
-          c: '#ffffff',
-        });
-      }
+      // Brand row: gradient mark, wordmark, and date.
+      ops.push({ t: 'mark', x: left, y, s: 36 });
       ops.push({
         t: 'text',
-        s: 'DEEPSEEK HARNESS',
-        x: left + 46,
-        y: y + 21.5,
-        f: '600 12px ' + SANS,
-        c: '#6b7280',
+        s: 'DeepSeek Harness',
+        x: left + 50,
+        y: y + 24,
+        f: '600 16px ' + SANS,
+        c: COLORS.ink,
       });
-      const dateFont = '12px ' + SANS;
-      measure.font = dateFont;
-      const dateWidth = measure.measureText(options.dateText).width;
+      const dateFont = '12.5px ' + SANS;
+      const dateWidth = measureTextWidth(measure, options.dateText, dateFont);
       ops.push({
         t: 'text',
         s: options.dateText,
-        x: width - pad - dateWidth,
-        y: y + 21.5,
+        x: right - dateWidth,
+        y: y + 23,
         f: dateFont,
-        c: COLORS.muted,
+        c: COLORS.meta,
       });
 
-      y += 34 + 28;
+      y += 36 + 28;
 
-      const titleFont = '600 26px ' + SANS;
-      const titleLines = wrapText(measure, options.title, contentWidth, titleFont);
-      const shownTitle = titleLines.slice(0, 3);
-      for (const line of shownTitle) {
-        ops.push({ t: 'text', s: line, x: left, y: y + 26, f: titleFont, c: COLORS.title });
-        y += 34;
+      // Title.
+      const titleFont = '700 27px ' + SANS;
+      const allTitleLines = wrapText(measure, options.title, contentWidth, titleFont);
+      const titleLines = allTitleLines.slice(0, 3);
+      if (allTitleLines.length > 3) {
+        titleLines[2] = fitEllipsis(measure, titleLines[2], contentWidth, titleFont);
       }
-      y += 4;
+      for (const line of titleLines) {
+        ops.push({ t: 'text', s: line, x: left, y: y + 23, f: titleFont, c: COLORS.ink });
+        y += 37;
+      }
+
+      // Meta line.
+      y += 2;
       ops.push({
         t: 'text',
         s: options.metaText,
@@ -480,58 +581,112 @@ window.__ModuleLoader__.load({
         f: '13px ' + SANS,
         c: COLORS.meta,
       });
-      y += 16 + 22;
-      ops.push({ t: 'line', x1: left, y1: y, x2: width - pad, y2: y, c: COLORS.divider });
-      y += 26;
+      y += 16 + 24;
+      ops.push({ t: 'line', x1: left, y1: y, x2: right, y2: y, c: COLORS.divider });
+      y += 28;
 
       let truncated = false;
       for (const message of options.messages) {
-        if (y > CARD.maxHeight - 300) {
+        if (y > CARD.maxHeight - 320) {
           truncated = true;
           break;
         }
         const isUser = message.role === 'user';
         const roleLabel = isUser ? options.labels.user : options.labels.assistant;
-        const chipFont = '600 11px ' + SANS;
-        measure.font = chipFont;
-        const chipWidth = measure.measureText(roleLabel).width + 16;
+        const pillFont = '600 11px ' + SANS;
+        const pillWidth = measureTextWidth(measure, roleLabel, pillFont) + 27;
         ops.push({
           t: 'rect',
           x: left,
           y,
-          w: chipWidth,
-          h: 20,
-          r: 6,
+          w: pillWidth,
+          h: 22,
+          r: 11,
           c: isUser ? COLORS.userChipBg : COLORS.assistantChipBg,
+        });
+        ops.push({
+          t: 'dot',
+          x: left + 11,
+          y: y + 11,
+          r: 3,
+          c: isUser ? COLORS.userChipText : COLORS.assistantChipText,
         });
         ops.push({
           t: 'text',
           s: roleLabel,
-          x: left + 8,
-          y: y + 14,
-          f: chipFont,
+          x: left + 20,
+          y: y + 15,
+          f: pillFont,
           c: isUser ? COLORS.userChipText : COLORS.assistantChipText,
         });
-        y += 20 + 13;
-        y = layoutMessageBlocks(ops, parseBlocks(message.text), y, left, contentWidth, measure) + 22;
+        y += 22 + 12;
+
+        if (isUser) {
+          const innerWidth = contentWidth - 36;
+          const content = renderBlocks(message.text, innerWidth, measure);
+          const bubbleHeight = Math.ceil(content.height + 28);
+          const bubbleWidth = Math.min(
+            contentWidth,
+            Math.max(200, Math.ceil(naturalContentWidth(content, measure) + 36)),
+          );
+          ops.push({
+            t: 'rect',
+            x: left,
+            y,
+            w: bubbleWidth,
+            h: bubbleHeight,
+            r: 14,
+            c: COLORS.userBg,
+          });
+          ops.push({
+            t: 'stroke',
+            x: left,
+            y,
+            w: bubbleWidth,
+            h: bubbleHeight,
+            r: 14,
+            c: COLORS.userBorder,
+          });
+          shiftOps(ops, content.ops, left + 18, y + 14);
+          y += bubbleHeight;
+        } else {
+          const content = renderBlocks(message.text, contentWidth, measure);
+          shiftOps(ops, content.ops, left, y);
+          y += content.height;
+        }
+        y += 26;
       }
 
       if (truncated) {
         const font = '12.5px ' + SANS;
-        const lines = wrapText(measure, options.truncatedNote, contentWidth, font);
-        y = emitLines(ops, lines, left, y + 2, font, COLORS.warn, 19, 13.5) + 6;
+        const lines = wrapText(measure, options.truncatedNote, contentWidth - 32, font);
+        const height = lines.length * 19 + 22;
+        ops.push({ t: 'rect', x: left, y, w: contentWidth, h: height, r: 10, c: COLORS.warnBg });
+        ops.push({
+          t: 'stroke',
+          x: left,
+          y,
+          w: contentWidth,
+          h: height,
+          r: 10,
+          c: COLORS.warnBorder,
+        });
+        emitLines(ops, lines, left + 16, y + 11, font, COLORS.warnText, 19, 13.5);
+        y += height + 14;
       }
 
-      y += 6;
-      ops.push({ t: 'line', x1: left, y1: y, x2: width - pad, y2: y, c: COLORS.divider });
+      // Footer.
+      y += 2;
+      ops.push({ t: 'line', x1: left, y1: y, x2: right, y2: y, c: COLORS.divider });
       y += 22;
+      ops.push({ t: 'dot', x: left + 3, y: y + 5, r: 3, c: CARD.brand });
       ops.push({
         t: 'text',
         s: options.footerText,
-        x: left,
-        y: y + 11,
+        x: left + 14,
+        y: y + 10,
         f: '11.5px ' + SANS,
-        c: COLORS.muted,
+        c: COLORS.meta,
       });
 
       return { ops, height: Math.ceil(y + pad), width, truncated };
@@ -564,23 +719,52 @@ window.__ModuleLoader__.load({
 
     function renderShareImage(options) {
       const layout = buildLayout(options);
-      const scale = layout.height * 2 <= 16000 ? 2 : 1;
+      const canvasWidth = CARD.width;
+      const canvasHeight = layout.height + CARD.margin * 2;
+      const scale = canvasHeight * 2 <= 16000 ? 2 : 1;
       const canvas = document.createElement('canvas');
-      canvas.width = Math.round(layout.width * scale);
-      canvas.height = Math.round(layout.height * scale);
+      canvas.width = Math.round(canvasWidth * scale);
+      canvas.height = Math.round(canvasHeight * scale);
       const ctx = canvas.getContext('2d');
       ctx.scale(scale, scale);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, layout.width, layout.height);
       ctx.textBaseline = 'alphabetic';
+
+      // Soft page gradient, then the raised card with a light shadow.
+      const page = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+      page.addColorStop(0, COLORS.backgroundTop);
+      page.addColorStop(1, COLORS.backgroundBottom);
+      ctx.fillStyle = page;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      const cardX = CARD.margin;
+      const cardY = CARD.margin;
+      const cardW = canvasWidth - CARD.margin * 2;
+      const cardH = layout.height;
+      ctx.save();
+      ctx.shadowColor = 'rgba(20, 29, 54, 0.10)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 8;
+      roundRectPath(ctx, cardX, cardY, cardW, cardH, CARD.radius);
+      ctx.fillStyle = COLORS.card;
+      ctx.fill();
+      ctx.restore();
+      ctx.strokeStyle = COLORS.cardEdge;
+      ctx.lineWidth = 1;
+      roundRectPath(ctx, cardX + 0.5, cardY + 0.5, cardW - 1, cardH - 1, CARD.radius);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(CARD.margin, CARD.margin);
       drawOps(ctx, layout.ops);
+      ctx.restore();
+
       const dataUrl = canvas.toDataURL('image/png');
       const now = new Date();
       return {
         dataUrl,
         blob: dataUrlToBlob(dataUrl),
-        width: Math.round(layout.width * scale),
-        height: Math.round(layout.height * scale),
+        width: Math.round(canvasWidth * scale),
+        height: Math.round(canvasHeight * scale),
         fileName: 'conversation-' + timestampSuffix(now) + '.png',
         truncated: layout.truncated,
       };
@@ -724,43 +908,48 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
 
     const CSS =
-      '.dsh-shareimg-btn{width:28px;height:28px;border-radius:999px;border:0;padding:0;background:transparent;color:var(--dsw-alias-label-secondary);display:grid;place-items:center;cursor:pointer;flex:none}' +
-      '.dsh-shareimg-btn:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}' +
-      '.dsh-shareimg-btn:disabled{opacity:.4;cursor:default}' +
-      '.dsh-shareimg-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-msgbtn{width:28px;height:28px;border-radius:6px;border:0;background:transparent;color:var(--dsw-alias-label-secondary);display:inline-flex;align-items:center;justify-content:center;padding:6px;cursor:pointer;flex:none}' +
-      '.dsh-shareimg-msgbtn:hover{background:var(--dsw-alias-bg-layer-2)}' +
+      '.dsh-shareimg-msgbtn:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}' +
       '.dsh-shareimg-msgbtn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-msgbtn svg{width:17px;height:17px}' +
       '.dsh-shareimg-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,12,16,.55);pointer-events:auto;overscroll-behavior:contain}' +
-      '.dsh-shareimg-panel{width:min(960px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;border-radius:16px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);box-shadow:0 24px 64px rgba(0,0,0,.35);color:var(--dsw-alias-label-primary)}' +
+      '.dsh-shareimg-panel{width:min(960px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;border-radius:18px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);box-shadow:0 28px 72px rgba(0,0,0,.38);color:var(--dsw-alias-label-primary);animation:dsh-shareimg-panel-in .18s cubic-bezier(.2,.8,.3,1)}' +
+      '@keyframes dsh-shareimg-panel-in{from{opacity:0;transform:translateY(8px) scale(.996)}to{opacity:1;transform:none}}' +
       '.dsh-shareimg-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none}' +
-      '.dsh-shareimg-title{font-size:14px;font-weight:600;line-height:20px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.dsh-shareimg-mark{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#5b78ff,#7a5cff);color:#ffffff;display:grid;place-items:center;flex:none;box-shadow:0 2px 8px rgba(77,107,254,.32)}' +
+      '.dsh-shareimg-mark svg{width:17px;height:17px}' +
+      '.dsh-shareimg-headtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}' +
+      '.dsh-shareimg-title{font-size:14px;font-weight:600;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.dsh-shareimg-subtitle{font-size:11.5px;line-height:16px;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
       '.dsh-shareimg-close{width:28px;height:28px;border-radius:8px;border:0;background:transparent;color:var(--dsw-alias-label-secondary);display:grid;place-items:center;cursor:pointer;flex:none}' +
-      '.dsh-shareimg-close:hover{background:var(--dsw-alias-bg-layer-2)}' +
+      '.dsh-shareimg-close:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}' +
       '.dsh-shareimg-close:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-select{display:flex;flex-direction:column;flex:1;min-height:0}' +
-      '.dsh-shareimg-toolbar{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none}' +
+      '.dsh-shareimg-toolbar{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:none;background:var(--dsw-alias-bg-layer-2)}' +
       '.dsh-shareimg-count{flex:1;min-width:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-      '.dsh-shareimg-link{border:0;background:transparent;color:var(--dsw-alias-brand-primary);font-size:12px;font-weight:500;line-height:18px;cursor:pointer;padding:3px 6px;border-radius:6px;white-space:nowrap}' +
-      '.dsh-shareimg-link:hover{background:var(--dsw-alias-bg-layer-2)}' +
+      '.dsh-shareimg-link{border:0;background:transparent;color:var(--dsw-alias-brand-primary);font-size:12px;font-weight:500;line-height:18px;cursor:pointer;padding:3px 7px;border-radius:6px;white-space:nowrap}' +
+      '.dsh-shareimg-link:hover{background:var(--dsw-alias-bg-layer-1)}' +
       '.dsh-shareimg-link:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}' +
       '.dsh-shareimg-list{overflow:auto;padding:8px;display:flex;flex-direction:column;gap:2px;flex:1;min-height:0}' +
-      '.dsh-shareimg-row{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer}' +
+      '.dsh-shareimg-row{display:flex;align-items:flex-start;gap:12px;padding:10px 10px;border-radius:9px;cursor:pointer}' +
       '.dsh-shareimg-row:hover{background:var(--dsw-alias-bg-layer-2)}' +
-      '.dsh-shareimg-check{width:15px;height:15px;margin:2px 0 0;accent-color:var(--dsw-alias-brand-primary);flex:none;cursor:pointer}' +
-      '.dsh-shareimg-rowrole{font-size:11px;font-weight:600;line-height:19px;color:var(--dsw-alias-label-secondary);flex:none;min-width:52px}' +
+      '.dsh-shareimg-check{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin:0;border-radius:6px;border:1.5px solid var(--dsw-alias-border-l2);background:transparent;flex:none;cursor:pointer;position:relative;transition:background .12s,border-color .12s}' +
+      '.dsh-shareimg-check:hover{border-color:var(--dsw-alias-brand-primary)}' +
+      '.dsh-shareimg-check:checked{background-color:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'M3.5 8.5l3 3 6-7\' fill=\'none\' stroke=\'%23ffffff\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:12px 12px}' +
+      '.dsh-shareimg-check:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}' +
+      '.dsh-shareimg-rowrole{font-size:11px;font-weight:600;line-height:18px;color:var(--dsw-alias-label-secondary);flex:none;min-width:52px;padding-top:1px}' +
+      '.dsh-shareimg-row[data-role=user] .dsh-shareimg-rowrole{color:var(--dsw-alias-brand-primary)}' +
       '.dsh-shareimg-rowtext{font-size:13px;line-height:19px;color:var(--dsw-alias-label-primary);min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}' +
-      '.dsh-shareimg-body{overflow:auto;padding:16px;background:var(--dsw-alias-bg-layer-2);flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start}' +
-      '.dsh-shareimg-image{display:block;max-width:100%;height:auto;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18)}' +
-      '.dsh-shareimg-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--dsw-alias-border-l1);flex:none;flex-wrap:wrap}' +
+      '.dsh-shareimg-body{overflow:auto;padding:18px;background:var(--dsw-alias-bg-layer-2);flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start}' +
+      '.dsh-shareimg-image{display:block;max-width:100%;height:auto;border-radius:12px;box-shadow:0 10px 32px rgba(0,0,0,.20)}' +
+      '.dsh-shareimg-foot{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--dsw-alias-border-l1);flex:none;flex-wrap:wrap;background:var(--dsw-alias-bg-layer-1)}' +
       '.dsh-shareimg-status{flex:1;min-width:120px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}' +
       '.dsh-shareimg-status[data-tone=error]{color:var(--dsw-alias-state-error-primary)}' +
-      '.dsh-shareimg-action{height:32px;padding:0 14px;border-radius:8px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}' +
+      '.dsh-shareimg-action{height:34px;padding:0 15px;border-radius:9px;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s}' +
       '.dsh-shareimg-action:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}' +
       '.dsh-shareimg-action:disabled{opacity:.45;cursor:default}' +
       '.dsh-shareimg-action:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}' +
-      '.dsh-shareimg-action[data-variant=primary]{background:var(--dsw-alias-brand-primary);border-color:transparent;color:#ffffff}' +
+      '.dsh-shareimg-action[data-variant=primary]{background:var(--dsw-alias-brand-primary);border-color:transparent;color:#ffffff;box-shadow:0 1px 2px rgba(0,0,0,.12)}' +
       '.dsh-shareimg-action[data-variant=primary]:hover:not(:disabled){filter:brightness(1.06)}';
 
     /* ------------------------------------------------------------------ *
@@ -1096,10 +1285,18 @@ window.__ModuleLoader__.load({
             h(
               'div',
               { className: 'dsh-shareimg-head' },
+              h('div', { className: 'dsh-shareimg-mark', 'aria-hidden': true }, h(ShareGlyph)),
               h(
                 'div',
-                { className: 'dsh-shareimg-title' },
-                selectStage ? t('select.title') : t('dialog.title'),
+                { className: 'dsh-shareimg-headtext' },
+                h(
+                  'div',
+                  { className: 'dsh-shareimg-title' },
+                  selectStage ? t('select.title') : t('dialog.title'),
+                ),
+                state.title !== ''
+                  ? h('div', { className: 'dsh-shareimg-subtitle' }, state.title)
+                  : null,
               ),
               h(
                 'button',
