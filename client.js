@@ -216,9 +216,14 @@ window.__ModuleLoader__.load({
      * Text preparation
      * ------------------------------------------------------------------ */
 
+    /** Restore markdown escapes such as \\. so they do not leak into the card. */
+    function unescapeMarkdown(text) {
+      return String(text).replace(/\\([\\`*_{}\[\]()#+\-.!>])/g, '$1');
+    }
+
     /** Entity/link/HTML cleanup that keeps emphasis markers for run parsing. */
     function inlineSource(text) {
-      return String(text)
+      return unescapeMarkdown(text)
         .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
         .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
         .replace(/<[^>]+>/g, '')
@@ -338,6 +343,32 @@ window.__ModuleLoader__.load({
           lines[index + 1].unshift(current.pop());
         }
       }
+      // Kinsoku may push tokens past the measure; fold the overflow back so a
+      // line never exceeds maxWidth unless it holds a single unbreakable token.
+      const lineWidth = (line) => {
+        let width = 0;
+        for (const token of line) width += token.width;
+        return width;
+      };
+      for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        while (line.length > 1 && lineWidth(line) > maxWidth) {
+          let moved = [line.pop()];
+          if (moved[0].space) {
+            if (line.length === 0) break;
+            moved = [line.pop()];
+          }
+          while (
+            CLOSING_PUNCT.indexOf(moved[0].text.charAt(0)) >= 0 &&
+            line.length > 1
+          ) {
+            moved.unshift(line.pop());
+          }
+          if (index === lines.length - 1) lines.push([]);
+          lines[index + 1] = moved.concat(lines[index + 1]);
+        }
+      }
+
       return lines;
     }
 
@@ -388,7 +419,15 @@ window.__ModuleLoader__.load({
 
     /** Split message text into renderable blocks (code, headings, lists, quotes). */
     function parseBlocks(text) {
-      const lines = String(text).replace(/\r\n/g, '\n').split('\n');
+      const rawLines = String(text).replace(/\r\n/g, '\n').split('\n');
+      let inFence = false;
+      const lines = rawLines.map((line) => {
+        if (/^```/.test(line)) {
+          inFence = !inFence;
+          return line;
+        }
+        return inFence ? line : unescapeMarkdown(line);
+      });
       const blocks = [];
       let i = 0;
       while (i < lines.length) {
@@ -803,7 +842,7 @@ window.__ModuleLoader__.load({
           );
           const natural = naturalContentWidth(content, measure);
           const bubbleWidth = Math.min(
-            maxBubble,
+            contentWidth,
             Math.max(120, Math.ceil(natural + bubblePadX * 2)),
           );
           const bubbleHeight = Math.ceil(content.height + bubblePadY * 2);
