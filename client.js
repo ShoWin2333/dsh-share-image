@@ -59,6 +59,9 @@ window.__ModuleLoader__.load({
       codeBg: COLORS.codeBg,
       codeBorder: COLORS.codeBorder,
       codeText: COLORS.codeText,
+      tableBg: '#ffffff',
+      tableHead: '#f4f6f9',
+      tableBorder: COLORS.codeBorder,
     };
 
     const BUBBLE_THEME = {
@@ -70,6 +73,9 @@ window.__ModuleLoader__.load({
       codeBg: 'rgba(255, 255, 255, 0.16)',
       codeBorder: 'rgba(255, 255, 255, 0.26)',
       codeText: '#f4f7ff',
+      tableBg: 'rgba(255, 255, 255, 0.12)',
+      tableHead: 'rgba(255, 255, 255, 0.22)',
+      tableBorder: 'rgba(255, 255, 255, 0.34)',
     };
 
     /** Official DSH whale mark: single path from the bundled 50×50 favicon. */
@@ -198,12 +204,21 @@ window.__ModuleLoader__.load({
       return messages;
     }
 
-    /** One-line preview for a picker row. */
+    /** One-line preview for a picker row. Table rows preview as their cells. */
     function previewText(text) {
-      const flat = inlineSource(text)
-        .replace(/\*\*|__|~~|`/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const parts = [];
+      for (const line of inlineSource(text).split('\n')) {
+        if (line.indexOf('|') >= 0 && tableAligns(line) !== null) continue;
+        if (line.indexOf('|') >= 0) {
+          const cells = splitTableRow(line);
+          if (cells.length > 1) {
+            parts.push(cells.filter((cell) => cell !== '').join(' \u00b7 '));
+            continue;
+          }
+        }
+        parts.push(line);
+      }
+      const flat = parts.join(' ').replace(/\*\*|__|~~|`/g, '').replace(/\s+/g, ' ').trim();
       return flat.length > 140 ? flat.slice(0, 139) + '\u2026' : flat;
     }
 
@@ -408,6 +423,59 @@ window.__ModuleLoader__.load({
     }
 
 
+    /** Split a GFM table row into trimmed cells, honouring \| and `code` spans. */
+    function splitTableRow(line) {
+      const text = String(line);
+      const cells = [];
+      let cell = '';
+      let inCode = false;
+      for (let index = 0; index < text.length; index += 1) {
+        const ch = text.charAt(index);
+        if (ch === '\\' && text.charAt(index + 1) === '|') {
+          cell += '|';
+          index += 1;
+          continue;
+        }
+        if (ch === '`') {
+          inCode = !inCode;
+          cell += ch;
+          continue;
+        }
+        if (ch === '|' && !inCode) {
+          cells.push(cell);
+          cell = '';
+          continue;
+        }
+        cell += ch;
+      }
+      cells.push(cell);
+      if (cells.length > 0 && cells[0].trim() === '') cells.shift();
+      if (cells.length > 0 && cells[cells.length - 1].trim() === '') cells.pop();
+      return cells.map((value) => value.trim());
+    }
+
+    /** Column alignments from a GFM delimiter row; null when the line is not one. */
+    function tableAligns(line) {
+      if (line.indexOf('-') < 0) return null;
+      const cells = splitTableRow(line);
+      if (cells.length === 0) return null;
+      const aligns = [];
+      for (const cell of cells) {
+        if (!/^:?-+:?$/.test(cell)) return null;
+        const left = cell.charAt(0) === ':';
+        const right = cell.charAt(cell.length - 1) === ':';
+        aligns.push(left && right ? 'center' : right ? 'right' : 'left');
+      }
+      return aligns;
+    }
+
+    function isTableStart(lines, index) {
+      if (index + 1 >= lines.length) return false;
+      if (lines[index].indexOf('|') < 0) return false;
+      if (tableAligns(lines[index]) !== null) return false;
+      return tableAligns(lines[index + 1]) !== null;
+    }
+
     function isMarkerLine(line) {
       return (
         /^```/.test(line) ||
@@ -463,12 +531,39 @@ window.__ModuleLoader__.load({
           blocks.push({ kind: 'quote', text: inlineSource(body.join('\n')) });
           continue;
         }
+        if (isTableStart(lines, i)) {
+          const head = splitTableRow(line);
+          const aligns = tableAligns(lines[i + 1]);
+          const cols = aligns.length;
+          const header = [];
+          for (let c = 0; c < cols; c += 1) header.push(head[c] === undefined ? '' : head[c]);
+          let cursor = i + 2;
+          const rows = [];
+          while (cursor < lines.length) {
+            const next = lines[cursor];
+            if (next.trim() === '' || next.indexOf('|') < 0) break;
+            if (/^```/.test(next) || isMarkerLine(next) || tableAligns(next) !== null) break;
+            const cells = splitTableRow(next);
+            const row = [];
+            for (let c = 0; c < cols; c += 1) row.push(cells[c] === undefined ? '' : cells[c]);
+            rows.push(row);
+            cursor += 1;
+          }
+          blocks.push({ kind: 'table', aligns, header, rows });
+          i = cursor;
+          continue;
+        }
         const item = /^(\s*)([-*+]|\d{1,3}[.)])\s+(.*)$/.exec(line);
         if (item !== null) {
           const marker = /^\d/.test(item[2]) ? item[2] : '\u2022';
           const body = [item[3]];
           i += 1;
-          while (i < lines.length && lines[i].trim() !== '' && !isMarkerLine(lines[i])) {
+          while (
+            i < lines.length &&
+            lines[i].trim() !== '' &&
+            !isMarkerLine(lines[i]) &&
+            !isTableStart(lines, i)
+          ) {
             body.push(lines[i].trim());
             i += 1;
           }
@@ -477,7 +572,12 @@ window.__ModuleLoader__.load({
         }
         const body = [line];
         i += 1;
-        while (i < lines.length && lines[i].trim() !== '' && !isMarkerLine(lines[i])) {
+        while (
+          i < lines.length &&
+          lines[i].trim() !== '' &&
+          !isMarkerLine(lines[i]) &&
+          !isTableStart(lines, i)
+        ) {
           body.push(lines[i]);
           i += 1;
         }
@@ -539,7 +639,217 @@ window.__ModuleLoader__.load({
     function blockGap(block) {
       if (block.kind === 'item') return 8;
       if (block.kind === 'heading') return 14;
+      if (block.kind === 'table') return 20;
       return 15;
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Tables: measured columns, wrapped cells, painted rows
+     * ------------------------------------------------------------------ */
+
+    const TABLE_CELL_PAD_X = 6;
+    const TABLE_CELL_PAD_Y = 7;
+    const TABLE_LINE_HEIGHT = 18;
+    const TABLE_FONT = '13px ' + SANS;
+    const TABLE_HEAD_FONT = '700 13px ' + SANS;
+    const TABLE_FLOOR_COL = 40;
+    const CJK_CHAR = /[\u2e80-\u9fff\u3000-\u303f\uff00-\uffef\u3040-\u30ff\uac00-\ud7af]/;
+
+    /** A cell's plain text, so measurement ignores emphasis markers. */
+    function tableCellPlain(cell) {
+      let text = '';
+      for (const run of inlineRuns(cell)) text += run.text;
+      return text;
+    }
+
+    /**
+     * Cell tokens keep runs (bold) and break at spaces. A word that cannot fit
+     * is split per character, so `702.31 亿元` wraps at its space instead of
+     * splitting the unit.
+     */
+    function tableCellLines(measure, cell, font, maxWidth) {
+      const boldFont = boldOf(font);
+      const tokens = [];
+      const pushSpace = () => {
+        if (tokens.length === 0) return;
+        if (tokens[tokens.length - 1].space) return;
+        measure.font = font;
+        tokens.push({ text: ' ', bold: false, space: true, width: measure.measureText(' ').width });
+      };
+      for (const run of inlineRuns(cell)) {
+        const runFont = run.bold ? boldFont : font;
+        measure.font = runFont;
+        for (const piece of String(run.text).split(/(\s+)/)) {
+          if (piece === '') continue;
+          if (/^\s+$/.test(piece)) {
+            pushSpace();
+            continue;
+          }
+          const width = measure.measureText(piece).width;
+          if (width <= maxWidth) {
+            tokens.push({ text: piece, bold: run.bold, space: false, width });
+            continue;
+          }
+          for (const ch of piece) {
+            tokens.push({ text: ch, bold: run.bold, space: false, width: measure.measureText(ch).width });
+          }
+        }
+      }
+      return { lines: wrapTokens(tokens, maxWidth), boldFont };
+    }
+
+    /** Widest Latin/digit chunk in a cell: the part that must not split mid-word. */
+    function tableCellFloor(measure, cell, font) {
+      let widest = 0;
+      measure.font = font;
+      for (const chunk of tableCellPlain(cell).split(/\s+/)) {
+        if (chunk === '' || CJK_CHAR.test(chunk)) continue;
+        widest = Math.max(widest, measure.measureText(chunk).width);
+      }
+      return widest + TABLE_CELL_PAD_X * 2;
+    }
+
+    /** Column widths that fit `width`: natural sizes when they fit, else shrunk. */
+    function tableColumnWidths(texts, cols, width, measure) {
+      const natural = new Array(cols).fill(0);
+      const floors = new Array(cols).fill(0);
+      const floorCap = width / cols;
+      for (let r = 0; r < texts.length; r += 1) {
+        const font = r === 0 ? TABLE_HEAD_FONT : TABLE_FONT;
+        for (let c = 0; c < cols; c += 1) {
+          const plain = tableCellPlain(texts[r][c]);
+          const text = plain === '' ? ' ' : plain;
+          natural[c] = Math.max(natural[c], measureTextWidth(measure, text, font));
+          floors[c] = Math.max(floors[c], tableCellFloor(measure, texts[r][c], font));
+        }
+      }
+      for (let c = 0; c < cols; c += 1) {
+        floors[c] = Math.min(Math.max(floors[c], TABLE_FLOOR_COL), floorCap);
+      }
+      const wanted = natural.map((value, index) => Math.max(value + TABLE_CELL_PAD_X * 2, floors[index]));
+      const sum = wanted.reduce((total, value) => total + value, 0);
+      if (sum === 0) return new Array(cols).fill(width / cols);
+      if (sum <= width) {
+        // Fill the card: hand the spare width out in proportion to content.
+        return wanted.map((value) => (value * width) / sum);
+      }
+      // Shrink the roomy columns first so short numeric columns keep their text.
+      const widths = wanted.slice();
+      const excess = sum - width;
+      const slack = widths.map((value, index) => Math.max(0, value - floors[index]));
+      const slackTotal = slack.reduce((total, value) => total + value, 0);
+      if (slackTotal <= 0) return widths.map(() => width / cols);
+      if (excess >= slackTotal) {
+        const floorTotal = floors.reduce((total, value) => total + value, 0);
+        if (floorTotal <= 0) return new Array(cols).fill(width / cols);
+        return floors.map((value) => (value * width) / floorTotal);
+      }
+      for (let index = 0; index < cols; index += 1) {
+        widths[index] -= (excess * slack[index]) / slackTotal;
+      }
+      const total = widths.reduce((sum2, value) => sum2 + value, 0);
+      if (total <= 0) return new Array(cols).fill(width / cols);
+      return widths.map((value) => (value * width) / total);
+    }
+
+    function layoutTable(ops, block, x, y, width, measure, palette) {
+      const cols = block.aligns.length;
+      if (cols === 0) return y;
+      const texts = [block.header, ...block.rows];
+      const widths = tableColumnWidths(texts, cols, width, measure);
+      const rowLines = [];
+      const rowHeights = [];
+      for (let r = 0; r < texts.length; r += 1) {
+        const font = r === 0 ? TABLE_HEAD_FONT : TABLE_FONT;
+        const cells = [];
+        let lines = 1;
+        for (let c = 0; c < cols; c += 1) {
+          const wrapped = tableCellLines(
+            measure,
+            texts[r][c],
+            font,
+            Math.max(widths[c] - TABLE_CELL_PAD_X * 2, 12),
+          );
+          cells.push(wrapped);
+          lines = Math.max(lines, Math.max(wrapped.lines.length, 1));
+        }
+        rowLines.push(cells);
+        rowHeights.push(lines * TABLE_LINE_HEIGHT + TABLE_CELL_PAD_Y * 2);
+      }
+      const height = rowHeights.reduce((total, value) => total + value, 0);
+
+      ops.push({ t: 'rect', x, y, w: width, h: height, r: 10, c: palette.tableBg });
+      const headHeight = rowHeights[0];
+      ops.push({ t: 'rect', x, y, w: width, h: headHeight, r: 10, c: palette.tableHead });
+      if (headHeight > 16) {
+        ops.push({
+          t: 'rect',
+          x,
+          y: y + Math.floor(headHeight / 2),
+          w: width,
+          h: Math.ceil(headHeight / 2),
+          r: 0,
+          c: palette.tableHead,
+        });
+      }
+
+      let cursor = y;
+      for (let r = 0; r < texts.length; r += 1) {
+        const font = r === 0 ? TABLE_HEAD_FONT : TABLE_FONT;
+        const color = r === 0 ? palette.heading : palette.body;
+        let cx = x;
+        for (let c = 0; c < cols; c += 1) {
+          const inner = Math.max(widths[c] - TABLE_CELL_PAD_X * 2, 12);
+          const align = block.aligns[c];
+          let baseline = cursor + TABLE_CELL_PAD_Y;
+          const content = rowLines[r][c];
+          for (const line of content.lines) {
+            let lineWidth = 0;
+            for (const token of line) lineWidth += token.width;
+            let offset = 0;
+            if (align === 'center') offset = Math.max(0, (inner - lineWidth) / 2);
+            else if (align === 'right') offset = Math.max(0, inner - lineWidth);
+            let px = cx + TABLE_CELL_PAD_X + offset;
+            for (const token of line) {
+              if (!token.space) {
+                ops.push({
+                  t: 'text',
+                  s: token.text,
+                  x: px,
+                  y: baseline + 13,
+                  f: token.bold ? content.boldFont : font,
+                  c: color,
+                });
+              }
+              px += token.width;
+            }
+            baseline += TABLE_LINE_HEIGHT;
+          }
+          cx += widths[c];
+        }
+        cursor += rowHeights[r];
+        if (r < texts.length - 1) {
+          ops.push({
+            t: 'line',
+            x1: x + 1,
+            y1: cursor,
+            x2: x + width - 1,
+            y2: cursor,
+            c: palette.tableBorder,
+          });
+        }
+      }
+
+      let vx = x;
+      for (let c = 1; c < cols; c += 1) {
+        vx += widths[c - 1];
+        const top = y + headHeight;
+        if (cursor - top <= 0) break;
+        ops.push({ t: 'line', x1: vx, y1: top, x2: vx, y2: cursor, c: palette.tableBorder });
+      }
+
+      ops.push({ t: 'stroke', x, y, w: width, h: height, r: 10, c: palette.tableBorder });
+      return y + height;
     }
 
     function layoutMessageBlocks(ops, blocks, startY, x, width, measure, theme) {
@@ -618,6 +928,11 @@ window.__ModuleLoader__.load({
             lineHeight,
             18,
           );
+          y += trailing;
+          return;
+        }
+        if (block.kind === 'table') {
+          y = layoutTable(ops, block, x, y, width, measure, palette);
           y += trailing;
           return;
         }
@@ -755,10 +1070,15 @@ window.__ModuleLoader__.load({
     }
 
     /** Lay out parsed markdown at the origin so callers can place or box it. */
-    function renderBlocks(text, width, measure, theme) {
+    function layoutParsedBlocks(blocks, width, measure, theme) {
       const ops = [];
-      const height = layoutMessageBlocks(ops, parseBlocks(text), 0, 0, width, measure, theme);
+      const height = layoutMessageBlocks(ops, blocks, 0, 0, width, measure, theme);
       return { ops, height };
+    }
+
+    /** Lay out parsed markdown at the origin so callers can place or box it. */
+    function renderBlocks(text, width, measure, theme) {
+      return layoutParsedBlocks(parseBlocks(text), width, measure, theme);
     }
 
     function naturalContentWidth(content, measure) {
@@ -834,9 +1154,11 @@ window.__ModuleLoader__.load({
           const maxBubble = Math.round(contentWidth * 0.8);
           const bubblePadX = 16;
           const bubblePadY = 12;
-          const content = renderBlocks(
-            message.text,
-            maxBubble - bubblePadX * 2,
+          const blocks = parseBlocks(message.text);
+          const wide = blocks.some((block) => block.kind === 'table');
+          const content = layoutParsedBlocks(
+            blocks,
+            (wide ? contentWidth : maxBubble) - bubblePadX * 2,
             measure,
             BUBBLE_THEME,
           );
