@@ -112,6 +112,10 @@ Add the bundle to `dsh.profile.bundles`, then edit `client.js`. DSH hot-reloads
 client plugins, so slot changes appear without restarting the profile; a
 `node --check client.js` catches syntax errors.
 
+Run `npm test` (Node.js 18+) for dependency-free parser and table-layout
+regressions. The tests exercise the actual renderer helpers with deterministic
+font metrics; they do not replace visual checks in the DSH browser UI.
+
 ## License
 
 MIT
