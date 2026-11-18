@@ -8,8 +8,8 @@ card you can download or copy.
   before it.
 - Rendered locally with Canvas as a clean reading card: a compact brand
   header, right-aligned user bubbles, assistant answers with code blocks,
-  lists, and quotes, plus a footer that repeats the brand rule and the capture
-  details.
+  lists, quotes, and tables, plus a footer that repeats the brand rule and the
+  capture details.
 - Download as PNG or copy straight to the clipboard. Nothing leaves the
   browser.
 
@@ -75,6 +75,9 @@ transcript rather than a log.
   into one answer in the image; unselected messages in between are skipped.
 - A very long conversation is truncated to fit one image; the card then ends
   with a note saying the most recent messages were kept.
+- Markdown tables are drawn as real tables: columns are measured against the
+  card width, wide columns give up space before narrow numeric ones, long cells
+  wrap inside their column, and `:` alignment markers are honoured.
 - The card is laid out at phone width (390 logical px) and exported at up to
   3x, so it fills a phone screen with readable text wherever it is shared.
 - The card keeps a fixed light palette, independent of the active UI theme.
@@ -108,6 +111,10 @@ dsh plugin --profile <profile> add link:/absolute/path/to/dsh-share-image
 Add the bundle to `dsh.profile.bundles`, then edit `client.js`. DSH hot-reloads
 client plugins, so slot changes appear without restarting the profile; a
 `node --check client.js` catches syntax errors.
+
+Run `npm test` (Node.js 18+) for dependency-free parser and table-layout
+regressions. The tests exercise the actual renderer helpers with deterministic
+font metrics; they do not replace visual checks in the DSH browser UI.
 
 ## License
 
