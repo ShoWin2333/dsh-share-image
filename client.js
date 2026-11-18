@@ -208,8 +208,10 @@ window.__ModuleLoader__.load({
     function previewText(text) {
       const parts = [];
       for (const line of inlineSource(text).split('\n')) {
-        if (line.indexOf('|') >= 0 && tableAligns(line) !== null) continue;
-        if (line.indexOf('|') >= 0) {
+        const trimmed = line.trim();
+        const tabled = trimmed.indexOf('|') >= 0 && (trimmed.startsWith('|') || trimmed.endsWith('|'));
+        if (tabled && tableAligns(line) !== null) continue;
+        if (tabled) {
           const cells = splitTableRow(line);
           if (cells.length > 1) {
             parts.push(cells.filter((cell) => cell !== '').join(' \u00b7 '));
