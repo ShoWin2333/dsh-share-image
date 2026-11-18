@@ -475,7 +475,8 @@ window.__ModuleLoader__.load({
       if (index + 1 >= lines.length) return false;
       if (lines[index].indexOf('|') < 0) return false;
       if (tableAligns(lines[index]) !== null) return false;
-      return tableAligns(lines[index + 1]) !== null;
+      const aligns = tableAligns(lines[index + 1]);
+      return aligns !== null && splitTableRow(lines[index]).length === aligns.length;
     }
 
     function isMarkerLine(line) {
@@ -687,6 +688,7 @@ window.__ModuleLoader__.load({
             pushSpace();
             continue;
           }
+          measure.font = runFont;
           const width = measure.measureText(piece).width;
           if (width <= maxWidth) {
             tokens.push({ text: piece, bold: run.bold, space: false, width });
@@ -1980,3 +1982,4 @@ window.__ModuleLoader__.load({
     };
   },
 });
+
